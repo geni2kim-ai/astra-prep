@@ -3,15 +3,15 @@
 > **Pre-Work Evidence & Verification Planning Gate**  
 > *Authoritative starting-point fixation, requirement-to-evidence matrix, and capability gap disclosure at hour 0.*
 
-stra-prep is a node-agnostic pre-work planning skill designed for autonomous coding agents and multi-agent ecosystems. It enforces a strict planning discipline **before** touching source code, drafting packets, or compiling artifacts.
+`astra-prep` is a node-agnostic pre-work planning skill designed for autonomous coding agents and multi-agent ecosystems. It enforces a strict planning discipline **before** touching source code, drafting packets, or compiling artifacts.
 
-Instead of discovering provenance drift, missing runtime evidence, or overlooked edge cases at closeout, stra-prep surfaces these constraints at =0$.
+Instead of discovering provenance drift, missing runtime evidence, or overlooked edge cases at closeout, `astra-prep` surfaces these constraints at $t=0$.
 
 ---
 
-## 🌟 Key Concepts
+## Key Concepts
 
-1. **Fixing the Starting Point (=0$)**:
+1. **Fixing the Starting Point ($t=0$)**:
    - Explicitly locks the authoritative state pointer, handoff record, git worktree/branch, and the single starting candidate (commit SHA or document hash).
    - Detects PROVENANCE_DRIFT_AT_START before any change is made. If the handoff and source tree diverge, work is held until reconciled.
 
@@ -38,18 +38,17 @@ o-query).
 
 4. **Capability Gaps & Upfront Decisions**:
    For any target verification level the executing node cannot reach, it must explicitly decide:
-   - cquire: Secure the necessary runtime/device/provider.
-   - 
-escope: Adjust requirement scope with caller.
-   - ccept-as-open: Declare upfront that evidence will finish as STATIC_ONLY or RUNTIME_NOT_RUN.
+   - `acquire`: Secure the necessary runtime/device/provider.
+   - `rescope`: Adjust requirement scope with caller.
+   - `accept-as-open`: Declare upfront that evidence will finish as STATIC_ONLY or RUNTIME_NOT_RUN.
 
-5. **Symbiosis with stra-shadow**:
-   - stra-prep authors the pre-work matrix at start.
-   - stra-shadow audits the finished work at closeout against this exact matrix. Any item forecast as reachable that finishes NOT_RUN is flagged as an immediate finding.
+5. **Symbiosis with `astra-shadow`**:
+   - `astra-prep` authors the pre-work matrix at start.
+   - `astra-shadow` audits the finished work at closeout against this exact matrix. Any item forecast as reachable that finishes NOT_RUN is flagged as an immediate finding.
 
 ---
 
-## 📂 Repository Contents
+## Repository Contents
 
 | File | Purpose |
 | :--- | :--- |
@@ -57,10 +56,11 @@ escope: Adjust requirement scope with caller.
 | [ASTRA_PREP_USAGE.md](./ASTRA_PREP_USAGE.md) | Comprehensive per-lineage usage guide, fixed output templates, and worked examples |
 | [README_RELAY.md](./README_RELAY.md) | Relay staging provenance, revision history, and governance promotion gate criteria |
 | [.gitignore](./.gitignore) | Clean repository filter preventing accidental leak of backups and temporary files |
+| [.gitattributes](./.gitattributes) | Strict UTF-8 and LF line ending normalization rules |
 
 ---
 
-## 🚀 Quick Start & Pre-Work Plan Output Format
+## Quick Start & Pre-Work Plan Output Format
 
 Before beginning a feature or multi-step work unit, produce the following concise plan:
 
@@ -100,7 +100,7 @@ Before beginning a feature or multi-step work unit, produce the following concis
 
 ---
 
-## 📜 Governance & Standards
+## Governance & Standards
 
 - **File Encoding**: Strict UTF-8 without BOM, LF line endings.
 - **Node-Agnostic Design**: Parameterized for diverse agent runtimes (Claude, Codex, GLM, etc.).
