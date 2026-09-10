@@ -1,0 +1,44 @@
+work_unit: "unit with two starting candidates"
+actor: "actor-C"
+generated_at: "2026-09-10T14:00:00Z"
+baseline_id: "commit:aaa111"
+starting_candidate:
+  - type: commit
+    ref: "aaa111"
+    sha256: "5555555555555555555555555555555555555555555555555555555555555555"
+  - type: commit
+    ref: "bbb222"
+    sha256: "6666666666666666666666666666666666666666666666666666666666666666"
+provenance:
+  handoff:
+    path: "handoff/latest.md"
+    sha256: "NONE_RESOLVED"
+  state:
+    path: "state/cursor.json"
+    sha256: "NONE_RESOLVED"
+  tree:
+    worktree: "main-worktree"
+    branch: "main"
+  drift_at_start: false
+requirements:
+  - id: R-001
+    text: "does X"
+    implementation: "x.py"
+    module: null
+    target:
+      evidence_level: E1
+      review_independence: R0
+    reachable: true
+    capability_decision: null
+    accept_as_open_end_state: null
+review:
+  required: false
+  independence_target: R0
+  author_reviewer_distinct: null
+  route_id: null
+  bundle_path: null
+artifact_hygiene: []
+forecast:
+  best_reachable_cell: "E1/R0"
+  dispositions: []
+  raise_with_caller: []

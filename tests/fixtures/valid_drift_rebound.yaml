@@ -1,0 +1,59 @@
+work_unit: "unit that started on drifted base"
+actor: "actor-B"
+generated_at: "2026-09-10T13:00:00Z"
+baseline_id: "commit:def456"
+starting_candidate:
+  type: commit
+  ref: "def456"
+  sha256: "2222222222222222222222222222222222222222222222222222222222222222"
+provenance:
+  handoff:
+    path: "handoff/old.md"
+    sha256: "3333333333333333333333333333333333333333333333333333333333333333"
+  state:
+    path: "state/cursor.json"
+    sha256: "4444444444444444444444444444444444444444444444444444444444444444"
+  tree:
+    worktree: "feature-worktree"
+    branch: "feature/x"
+  drift_at_start: true
+  reconciliation:
+    action: reconcile
+    new_baseline_id: "commit:def456"
+    rebound: true
+requirements:
+  - id: R-001
+    text: "behaviour Y verified end to end"
+    implementation: "service/y.py"
+    module: realtime
+    target:
+      evidence_level: E5
+      review_independence: R2
+    reachable: true
+    capability_decision: null
+    accept_as_open_end_state: null
+  - id: R-002
+    text: "edge case for late-night rollover"
+    implementation: "service/y.py"
+    module: date-time
+    target:
+      evidence_level: E2
+      review_independence: R0
+    reachable: true
+    capability_decision: null
+    accept_as_open_end_state: null
+review:
+  required: true
+  independence_target: R2
+  author_reviewer_distinct: true
+  route_id: "route-ext-1"
+  bundle_path: "bundle/req-777"
+artifact_hygiene:
+  - artifact: "integration smoke report"
+    location: synced
+    retention_reason: "closeout audit anchor run, kept one copy"
+forecast:
+  best_reachable_cell: "E5/R2"
+  dispositions: []
+  raise_with_caller:
+    - "confirm external reviewer availability before start"

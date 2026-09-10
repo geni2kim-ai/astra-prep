@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/geni2kim-ai/astra-prep/schemas/prework-plan.schema.json",
+  "title": "astra-prep pre-work plan sidecar",
+  "description": "Machine-readable companion to the prose pre-work plan. Validated by scripts/validate_prework.py (which also enforces cross-field rules this schema cannot express).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "work_unit",
+    "actor",
+    "generated_at",
+    "baseline_id",
+    "starting_candidate",
+    "provenance",
+    "requirements",
+    "review",
+    "forecast"
+  ],
+  "properties": {
+    "work_unit": { "type": "string", "minLength": 1 },
+    "actor": { "type": "string", "minLength": 1 },
+    "generated_at": { "type": "string", "minLength": 1 },
+    "baseline_id": { "type": "string", "minLength": 1 },
+    "starting_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "ref", "sha256"],
+      "properties": {
+        "type": { "enum": ["commit", "tree", "rev", "doc"] },
+        "ref": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["handoff", "state", "tree", "drift_at_start"],
+      "properties": {
+        "handoff": { "$ref": "#/$defs/pointer" },
+        "state": { "$ref": "#/$defs/pointer" },
+        "tree": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["worktree"],
+          "properties": {
+            "worktree": { "type": "string", "minLength": 1 },
+            "branch": { "type": ["string", "null"] }
+          }
+        },
+        "drift_at_start": { "type": "boolean" },
+        "reconciliation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action", "new_baseline_id", "rebound"],
+          "properties": {
+            "action": { "enum": ["reconcile", "accept"] },
+            "new_baseline_id": { "type": "string", "minLength": 1 },
+            "rebound": { "const": true }
+          }
+        }
+      },
+      "if": { "properties": { "drift_at_start": { "const": true } } },
+      "then": { "required": ["reconciliation"] }
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text", "implementation", "target", "reachable"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^R-[0-9]+$" },
+          "text": { "type": "string", "minLength": 1 },
+          "implementation": { "type": "string", "minLength": 1 },
+          "module": {
+            "type": ["string", "null"],
+            "enum": [
+              "date-time", "realtime", "ui", "handoff", "packet-governance",
+              "db-migration", "source-lineage", "evidence-hygiene", null
+            ]
+          },
+          "target": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["evidence_level", "review_independence"],
+            "properties": {
+              "evidence_level": { "enum": ["E1", "E2", "E3", "E4", "E5"] },
+              "review_independence": { "enum": ["R0", "R1", "R2"] }
+            }
+          },
+          "reachable": { "type": "boolean" },
+          "capability_decision": {
+            "type": ["string", "null"],
+            "enum": ["acquire", "rescope", "accept-as-open", null]
+          },
+          "accept_as_open_end_state": { "type": ["string", "null"] }
+        },
+        "if": { "properties": { "reachable": { "const": false } } },
+        "then": {
+          "properties": {
+            "capability_decision": { "enum": ["acquire", "rescope", "accept-as-open"] }
+          },
+          "required": ["capability_decision"]
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "independence_target"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "independence_target": { "enum": ["R0", "R1", "R2"] },
+        "author_reviewer_distinct": { "type": ["boolean", "null"] },
+        "route_id": { "type": ["string", "null"] },
+        "bundle_path": { "type": ["string", "null"] }
+      }
+    },
+    "artifact_hygiene": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact", "location"],
+        "properties": {
+          "artifact": { "type": "string", "minLength": 1 },
+          "location": { "enum": ["host-local", "synced"] },
+          "retention_reason": { "type": ["string", "null"] }
+        },
+        "if": { "properties": { "location": { "const": "synced" } } },
+        "then": {
+          "properties": { "retention_reason": { "type": "string", "minLength": 1 } },
+          "required": ["retention_reason"]
+        }
+      }
+    },
+    "forecast": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["best_reachable_cell", "dispositions", "raise_with_caller"],
+      "properties": {
+        "best_reachable_cell": { "type": "string", "pattern": "^E[1-5]/R[0-2]$" },
+        "dispositions": { "type": "array", "items": { "type": "string" } },
+        "raise_with_caller": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "$defs": {
+    "pointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": {
+          "oneOf": [
+            { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            { "const": "NONE_RESOLVED" }
+          ]
+        }
+      }
+    }
+  }
+}

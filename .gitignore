@@ -8,6 +8,7 @@ Thumbs.db
 # Python
 __pycache__/
 *.py[cod]
+.pytest_cache/
 
 # IDE and editors
 .idea/

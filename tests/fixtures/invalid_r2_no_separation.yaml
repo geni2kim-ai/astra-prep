@@ -1,0 +1,41 @@
+work_unit: "R2 claimed without author/reviewer separation"
+actor: "actor-E"
+generated_at: "2026-09-10T16:00:00Z"
+baseline_id: "commit:ddd444"
+starting_candidate:
+  type: commit
+  ref: "ddd444"
+  sha256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+provenance:
+  handoff:
+    path: "handoff/latest.md"
+    sha256: "NONE_RESOLVED"
+  state:
+    path: "state/cursor.json"
+    sha256: "NONE_RESOLVED"
+  tree:
+    worktree: "main-worktree"
+    branch: "main"
+  drift_at_start: false
+requirements:
+  - id: R-001
+    text: "independently reviewed change"
+    implementation: "core/a.py"
+    module: null
+    target:
+      evidence_level: E1
+      review_independence: R2
+    reachable: true
+    capability_decision: null
+    accept_as_open_end_state: null
+review:
+  required: true
+  independence_target: R2
+  author_reviewer_distinct: null
+  route_id: "route-ext-1"
+  bundle_path: null
+artifact_hygiene: []
+forecast:
+  best_reachable_cell: "E1/R2"
+  dispositions: []
+  raise_with_caller: []

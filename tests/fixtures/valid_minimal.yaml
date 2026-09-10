@@ -1,0 +1,44 @@
+work_unit: "sample bounded unit"
+actor: "actor-A"
+generated_at: "2026-09-10T12:00:00Z"
+baseline_id: "commit:abc123"
+starting_candidate:
+  type: commit
+  ref: "abc123"
+  sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+provenance:
+  handoff:
+    path: "handoff/latest.md"
+    sha256: "1111111111111111111111111111111111111111111111111111111111111111"
+  state:
+    path: "state/cursor.json"
+    sha256: "NONE_RESOLVED"
+  tree:
+    worktree: "main-worktree"
+    branch: "main"
+  drift_at_start: false
+requirements:
+  - id: R-001
+    text: "the feature does X"
+    implementation: "module/x.py"
+    module: null
+    target:
+      evidence_level: E2
+      review_independence: R0
+    reachable: true
+    capability_decision: null
+    accept_as_open_end_state: null
+review:
+  required: false
+  independence_target: R0
+  author_reviewer_distinct: null
+  route_id: null
+  bundle_path: null
+artifact_hygiene:
+  - artifact: "test run log"
+    location: host-local
+    retention_reason: null
+forecast:
+  best_reachable_cell: "E2/R0"
+  dispositions: []
+  raise_with_caller: []

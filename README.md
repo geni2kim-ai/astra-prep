@@ -1,115 +1,104 @@
 # astra-prep
 
-> **Pre-Work Evidence & Verification Planning Gate**  
-> *Authoritative starting-point fixation, requirement-to-evidence matrix, and capability gap disclosure at hour 0.*
+> **Pre-Work Evidence & Verification Planning Gate**
+> *Fix the starting point, plan every requirement's evidence on two independent axes, and disclose capability gaps at hour 0 — not at closeout.*
 
-`astra-prep` is a node-agnostic pre-work planning skill designed for autonomous coding agents and multi-agent ecosystems. It enforces a strict planning discipline **before** touching source code, drafting packets, or compiling artifacts.
-
-Instead of discovering provenance drift, missing runtime evidence, or overlooked edge cases at closeout, `astra-prep` surfaces these constraints at $t=0$.
-
----
-
-## Key Concepts
-
-1. **Fixing the Starting Point ($t=0$)**:
-   - Explicitly locks the authoritative state pointer, handoff record, git worktree/branch, and the single starting candidate (commit SHA or document hash).
-   - Detects PROVENANCE_DRIFT_AT_START before any change is made. If the handoff and source tree diverge, work is held until reconciled.
-
-2. **Requirement-to-Evidence Matrix (6-Level Ran-vs-Read Ladder)**:
-   Every requirement is mapped to a planned evidence target on the 6-level verification ladder:
-   - **Level 1**: Source inspection / Static review
-   - **Level 2**: Deterministic unit / host tests
-   - **Level 3**: Build or package creation (e.g., APK assemble, binary compilation)
-   - **Level 4**: Rendered interactive runtime (emulator, device, browser)
-   - **Level 5**: Field / integration smoke (live APIs, external providers)
-   - **Level 6**: Independent external review (adversarial audit gate) — by a reviewer with no stake in the outcome and no prior context; a review by anyone who touched the source is Level 1, not Level 6.
-   *Rule: A lower level is never claimed as a substitute for a higher level.*
-
-3. **Selective Domain Pre-checks**:
-   Pre-populates requirements with domain-specific edge cases:
-   - date-time: Timezones, midnight/late-night boundary, rollover, rounding reversal.
-   - realtime: Idempotency, duplicate-request prevention, distinct states (live/stale/planned/no-query).
-   - ui: System bar boundaries, touch targets, contrast, loading/empty/error states, responsive widths.
-   - handoff: Single immutable candidate set, one clean end-to-end run as the anchor, updating handoff after the final mutation.
-   - packet-governance: ASCII/no-BOM format, single write-site, finality-lint safety, emit-provenance (no preview/no-emission markers into an emitted packet).
-   - source-lineage: Reconcile the current tree against a frozen baseline at hour 0 (match count, per-path drift, missing); freeze HEAD until the consolidating packet is out.
-   - db-migration: Forward/rollback paths, idempotency, row-count expectations.
-
-   **Evidence & artifact hygiene** (v6): plan where each artifact is written (host-local vs a synced tree), keep one authoritative run, no build output or `.git` in a synced tree, one draft version of a consolidating doc.
-
-4. **Capability Gaps & Upfront Decisions**:
-   For any target verification level the executing node cannot reach, it must explicitly decide:
-   - `acquire`: Secure the necessary runtime/device/provider.
-   - `rescope`: Adjust requirement scope with caller.
-   - `accept-as-open`: Declare upfront that evidence will finish as STATIC_ONLY or RUNTIME_NOT_RUN.
-
-5. **Symbiosis with `astra-shadow`**:
-   - `astra-prep` authors the pre-work matrix at start.
-   - `astra-shadow` audits the finished work at closeout against this exact matrix. Any item forecast as reachable that finishes NOT_RUN is flagged as an immediate finding.
+`astra-prep` is an ecosystem-agnostic pre-work planning skill for autonomous coding
+agents and multi-agent systems. It enforces a planning discipline **before** touching
+source, drafting documents, or compiling artifacts, so that provenance drift, missing
+runtime evidence, and overlooked edge cases surface at *t=0* instead of at completion.
 
 ---
 
-## Repository Contents
+## Key concepts
 
-| File | Purpose |
+### 1. Fix the starting point — `DRIFT → RECONCILE/ACCEPT → NEW BASELINE ID → REBIND → WORK`
+
+Locks the authoritative state pointer, handoff, worktree/branch, and the **single**
+starting candidate (commit SHA or document hash). If the handoff, state, and source tree
+diverge, work is held: the drift is reconciled or the caller names a base, **one new
+baseline id is minted**, the pointers are rebound to it, and only then does work start.
+Carrying three divergent pointers past the rebind is itself a finding.
+
+### 2. Two-axis evidence model
+
+Every requirement is planned to a **cell** on two independent axes — never a single
+"level".
+
+| Evidence Level (what was done) | Review Independence (who vouches) |
 | :--- | :--- |
-| [SKILL.md](./SKILL.md) | The core skill specification (frontmatter, node-parameterization, workflow, contracts) |
-| [ASTRA_PREP_USAGE.md](./ASTRA_PREP_USAGE.md) | Comprehensive per-lineage usage guide, fixed output templates, and worked examples |
-| [README_RELAY.md](./README_RELAY.md) | Relay staging provenance, revision history, and governance promotion gate criteria |
-| [.gitignore](./.gitignore) | Clean repository filter preventing accidental leak of backups and temporary files |
-| [.gitattributes](./.gitattributes) | Strict UTF-8 and LF line ending normalization rules |
+| `E1` Static — source read / lint / diff | `R0` Self / author |
+| `E2` Deterministic Test — unit / host, no live dep | `R1` Separate reviewer (shared context/stake) |
+| `E3` Build — compile / package / assemble | `R2` Independent external (no stake, no prior context) |
+| `E4` Runtime — real emulator / device / browser / service | |
+| `E5` Field / Integration — real provider / peer / data | |
 
----
+A target is written `E4/R2`, `E2/R0`, `E1/R1`, … The axes do not substitute for each
+other: an author who ran a real integration test is `E5/R0` (not `E1`); an independent
+reviewer who only read the source is `E1/R2` (not "level 6"). Full model and the legacy
+1–6 back-map: [`references/evidence-model.md`](./references/evidence-model.md).
 
-## Quick Start & Pre-Work Plan Output Format
+### 3. Selective domain pre-checks
 
-Before beginning a feature or multi-step work unit, produce the following concise plan:
+Pre-populates requirements with domain edge cases — `date-time`, `realtime`, `ui`,
+`handoff`, `packet-governance`, `db-migration`, `source-lineage`, plus evidence/artifact
+hygiene. See [`references/domain-checks.md`](./references/domain-checks.md).
 
-```markdown
-## Pre-work plan -- <work unit>
+### 4. Capability gaps → upfront decisions
 
-### 1. Bindings resolved
-- node symbol:            <id>
-- state pointer + hash:   <path> <sha256>  |  NONE_RESOLVED
-- handoff + hash:         <path> <sha256>  |  NONE_RESOLVED
-- node-registry source:   <path>
-- work tree / branch:     <worktree> <branch>  |  NO_WORKTREE
-- starting candidate:     <commit/tree/rev>  |  <doc path + sha256>
-- test runner:            <exact command>  |  N/A
-- review route:           <route_id> -> <probe> -> <permitted adapter/command> -> <receipt/status contract> -> <fallback>
+For any target cell the actor cannot reach: `acquire`, `rescope`, or `accept-as-open`
+(which names the honest end cell, e.g. "target `E4/R2`, will end `E1/R0`").
 
-### 2. Starting-point check
-- clean  |  PROVENANCE_DRIFT_AT_START: <handoff X vs source Y vs state Z>
+### 5. Machine-readable contract + fail-closed validator
 
-### 3. Requirement -> planned-evidence matrix
-| req_id | requirement | Implementation Target | Module | Target Level (1-6) | Reachable? | Missing Capability |
-|--------|-------------|-----------------------|--------|-------------------|------------|--------------------|
+The plan has a YAML/JSON sidecar
+([`schemas/prework-plan.schema.json`](./schemas/prework-plan.schema.json)) checked by
+[`scripts/validate_prework.py`](./scripts/validate_prework.py) — stdlib only, no
+third-party dependency. It **rejects** a plan that has more than one starting candidate,
+a duplicate/malformed requirement id, a missing target cell, an unreachable requirement
+with no capability decision, drift that was not rebound, an `R2` target with no proven
+author/reviewer separation, or a shared artifact with no retention reason.
 
-### 4. Domain pre-check rows added
-- module <id>: <added requirement rows>  (incl. source-lineage reconciliation if a frozen baseline applies)
-
-### 5. Evidence and artifact hygiene
-- where each artifact is written (host-local / synced), the one authoritative run, the synced-footprint budget
-
-### 6. Capability gaps -- decision per gap
-| req_id | gap | acquire / rescope / accept-as-open | Rationale |
-
-### 7. Independent-review plan
-- required? <yes/no>   independent per the level-6 bar?   route: <route_id>   bundle started? <yes/no, path>
-
-### 8. Closeout-readiness forecast
-- best reachable: CANDIDATE_READY  |  <RUNTIME_NOT_RUN / PROVENANCE_DRIFT_AT_START / CAPABILITY_GAP / EVIDENCE_TREE_BLOAT_RISK>
-- raise with caller NOW: <items>
+```bash
+python scripts/validate_prework.py path/to/prework-plan.yaml
 ```
 
+### 6. Ecosystem-agnostic core + profiles
+
+`SKILL.md` names no concrete actor, path, route, or vocabulary — those live in a
+**profile** ([`profiles/ai-maestro.md`](./profiles/ai-maestro.md) is the one shipped
+here). Editing a profile does not change the workflow or the evidence model; the core is
+edited once and every actor picks it up unchanged.
+
+### 7. Symbiosis with a closeout audit
+
+`astra-prep` authors the pre-work matrix at start; a closeout audit (`astra-shadow`)
+fills the same rows with the `E/R` cell actually reached and flags any row that finished
+lower than forecast on either axis.
+
 ---
 
-## Governance & Standards
+## Repository layout
 
-- **File Encoding**: Strict UTF-8 without BOM, LF line endings.
-- **Node-Agnostic Design**: Parameterized for diverse agent runtimes (Claude, Codex, GLM, etc.).
-- **Authority Boundary**: Planning-only. Does not grant finality or deploy code autonomously.
+| Path | Purpose |
+| :--- | :--- |
+| [`SKILL.md`](./SKILL.md) | ecosystem-agnostic core — workflow, evidence model, output contract |
+| [`profiles/ai-maestro.md`](./profiles/ai-maestro.md) | the one node-specific file — bindings, routes, capped-capability note, vocabulary rule |
+| [`references/evidence-model.md`](./references/evidence-model.md) | `E1–E5 × R0–R2` definitions, worked cells, legacy 1–6 back-map |
+| [`references/domain-checks.md`](./references/domain-checks.md) | selective domain pre-check modules + artifact hygiene |
+| [`schemas/prework-plan.schema.json`](./schemas/prework-plan.schema.json) | JSON Schema for the plan sidecar |
+| [`scripts/validate_prework.py`](./scripts/validate_prework.py) | fail-closed validator (Python stdlib only) |
+| [`tests/`](./tests/) | validator tests + the core-first grep gate |
+| [`ASTRA_PREP_USAGE.md`](./ASTRA_PREP_USAGE.md) | per-lineage usage guide, output template, worked examples |
+| [`README_RELAY.md`](./README_RELAY.md) | relay staging provenance, revision history, promotion gate |
 
 ---
+
+## Governance & standards
+
+- **File encoding**: strict UTF-8 without BOM, LF line endings.
+- **Ecosystem-agnostic core**: zero ecosystem-specific identifiers in `SKILL.md`
+  (enforced by a grep gate in `tests/`).
+- **Authority boundary**: planning-only. Does not grant finality or deploy code.
 
 *Maintained by the AI Maestro Engineering Team.*

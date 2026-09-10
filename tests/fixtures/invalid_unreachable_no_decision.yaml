@@ -1,0 +1,42 @@
+work_unit: "unreachable target with no capability decision"
+actor: "actor-F"
+generated_at: "2026-09-10T17:00:00Z"
+baseline_id: "commit:eee555"
+starting_candidate:
+  type: commit
+  ref: "eee555"
+  sha256: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+provenance:
+  handoff:
+    path: "handoff/latest.md"
+    sha256: "NONE_RESOLVED"
+  state:
+    path: "state/cursor.json"
+    sha256: "NONE_RESOLVED"
+  tree:
+    worktree: "main-worktree"
+    branch: "main"
+  drift_at_start: false
+requirements:
+  - id: R-001
+    text: "needs a device this actor does not have"
+    implementation: "ui/screen.kt"
+    module: ui
+    target:
+      evidence_level: E4
+      review_independence: R0
+    reachable: false
+    capability_decision: null
+    accept_as_open_end_state: null
+review:
+  required: false
+  independence_target: R0
+  author_reviewer_distinct: null
+  route_id: null
+  bundle_path: null
+artifact_hygiene: []
+forecast:
+  best_reachable_cell: "E1/R0"
+  dispositions:
+    - "RUNTIME_NOT_RUN"
+  raise_with_caller: []
