@@ -24,7 +24,7 @@ make them usable as an **all-node common skill**.
 | usage guide | `./ASTRA_PREP_USAGE.md` |
 | meeting-room session #5 minutes | `D:/Shared/0.AI_Maestro_Shared/src/dispatch_app/meeting_room/minutes/MEETING_20260910_sess5.md` |
 | tunnel notice to Beta | `D:/Shared/0.AI_Maestro_tunnel/1C_TO_4C_4X_SESSION5_BETA_TO_LIVE_ALIGNMENT_20260910.md` |
-| current SKILL.md sha256 | `0e8f18ae69c7e70587081f8fde18456a607b03508db2fd4cfbf53efd20c67b84` (v7) |
+| current SKILL.md sha256 | `9e5d15eddb668b5f2c99a3a6df4843c35bba0a16c2aac33d02d21257e3ba2dfb` (v7) |
 
 If your computed digest does not match, do not use the file — report the mismatch.
 
@@ -54,7 +54,7 @@ check (see "Before approved/ promotion" below).
 | v4 | 1X / Claude | **1X-reported**: lineage binding hardening, route/transport contract fields, shadow-mapping section, UTF-8/no-BOM/LF loader contract, added dispositions (`TRANSPORT_UNVERIFIED`, `CAPABILITY_GAP`, `SCOPE_RENEGOTIATION_NEEDED`), stable `requirement_id`/module IDs | 1X edit, 2026-09-10 ~09:33 | `57ce1aed57b042c606195ed5a987d60c41bf641cee16134b63aaffd1bb5abaca` | pending 1X author-bound ref (readback of current bytes confirmed by 1C/4X/1X in session #5, ~post 156-161; authorship of the v2->v4 changes not yet independently bound) |
 | v5 | 1C / Claude | review supplement: per-lineage binding starting-point table (incl. Beta), "Beta-node forecast is legitimately capped" note; usage guide authored separately | 1C edit, 2026-09-10 (post session #5) | `e89e714f22df54c0ad49ef0186bc6028809822666cb604d829c3a305fc34a82c` | this README (v5 line) + `ASTRA_PREP_USAGE.md` |
 | v6 | 1C / Claude | evidence-integrity upgrade grounded in the 1X 2026-09-09 ArriveBy case (~20 findings): new step 3b "Evidence and artifact hygiene"; new `source-lineage` module + frozen-baseline reconciliation; `packet-governance` emit-provenance row (aligns with the 260910-1X308 guard spec); step 5 level-6 independence bar ("a review by anyone who touched the source is not independent"); handoff "one clean end-to-end run" rule; `EVIDENCE_TREE_BLOAT_RISK` disposition | 1C edit, 2026-09-10 (hourly tick) | `7b637653d78714f4643ab1304f136a67b91066a7cae959cc1b4aee9b20c2d949` | this README (v6 line) + `ASTRA_PREP_UPGRADE_ANALYSIS_FROM_1X_260909_1C_20260910.md` |
-| v7 | 1C / Claude | **structural overhaul on USER review**: (1) the 1-6 ladder split into two independent axes -- Evidence Level `E1-E5` and Review Independence `R0-R2`, target written as a cell `E4/R2`; legacy back-map kept in `references/evidence-model.md`. (2) core `SKILL.md` made ecosystem-agnostic -- every node/route/path/vocabulary moved to `profiles/ai-maestro.md`; grep gate in `tests/`. (3) machine-readable sidecar `schemas/prework-plan.schema.json` + fail-closed `scripts/validate_prework.py` (checks C1-C9, stdlib only). (4) provenance flow hardened to `DRIFT -> RECONCILE/ACCEPT -> NEW BASELINE ID -> REBIND -> WORK`; validator C5 rejects unrebound drift. Closeout counterpart `astra-shadow` updated in the same pass. | 1C edit, 2026-09-10 | `0e8f18ae69c7e70587081f8fde18456a607b03508db2fd4cfbf53efd20c67b84` | this README (v7 line) + plan `merry-kindling-galaxy.md` + USER review transcript 2026-09-10 |
+| v7 | 1C / Claude | **structural overhaul on USER review**: (1) the 1-6 ladder split into two independent axes -- Evidence Level `E1-E5` and Review Independence `R0-R2`, target written as a cell `E4/R2`; legacy back-map kept in `references/evidence-model.md`. (2) core `SKILL.md` made ecosystem-agnostic -- every node/route/path/vocabulary binding moved to `profiles/ai-maestro.md`; the only ecosystem token left in core is the profile pointer itself; grep gate in `tests/` (scrub-then-fail). (3) machine-readable sidecar `schemas/prework-plan.schema.json` + fail-closed `scripts/validate_prework.py` (checks C1-C9, stdlib only). (4) provenance flow hardened to `DRIFT -> RECONCILE/ACCEPT -> NEW BASELINE ID -> REBIND -> WORK`; validator C5 rejects unrebound drift. Closeout counterpart `astra-shadow` updated in the same pass. | 1C edit, 2026-09-10 | `9e5d15eddb668b5f2c99a3a6df4843c35bba0a16c2aac33d02d21257e3ba2dfb` | this README (v7 line) + plan `merry-kindling-galaxy.md` + USER review transcript 2026-09-10 |
 
 **v3/v4 authorship stays `1X-reported / unverified`** until 1X supplies per-revision
 change summaries and an author-bound immutable reference (review/receipt/commit). A
@@ -109,10 +109,13 @@ all nodes can use it" is a verification-level overreach.
 
 Gate list for `Hub/skills/approved/`:
 
-0. **core-first** — `SKILL.md` carries zero ecosystem-specific identifiers (the `tests/`
-   grep gate is green) **and** a reviewer with no AI_Maestro context can produce a valid
-   pre-work plan from `SKILL.md` + `schemas/prework-plan.schema.json` alone. New shared
-   skills are authored core-first / profile-second; this gate applies to every future one.
+0. **core-first** — `SKILL.md` carries no ecosystem-specific bindings: no node ids, route
+   names, host names, cluster paths, or `finality-lint`-style vocabulary. The single
+   allowed ecosystem-flavoured token is the pointer to the shipped example profile
+   (`profiles/ai-maestro.md`); the `tests/` grep gate enforces this (scrubbing that one
+   token, then failing on any other). A reviewer with no AI_Maestro context can produce a
+   valid pre-work plan from `SKILL.md` + `schemas/prework-plan.schema.json` alone. New
+   shared skills are authored core-first / profile-second; this gate applies to every one.
 1. **1X** — v3/v4 per-revision change summaries + author-bound immutable ref + v3->v4 diff + hashes (v3 gap explicit if the artifact is unavailable). **v7 re-review**: the 2D model, the core/profile split, and the validator are a structural change and need a fresh cross-lineage pass.
 2. **4G** — relay test complete → `temp/PC4_BETA_4G_ASTRA_PREP_RELAY_TEST_20260910_R1.md`.
 3. **4X** — Codex loader/bindings check + one bounded Beta-local use.

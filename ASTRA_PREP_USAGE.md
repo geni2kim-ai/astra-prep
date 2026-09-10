@@ -3,7 +3,7 @@
 ```yaml
 document_id: ASTRA-PREP-USAGE-20260910
 skill: Hub/skills/relay/astra_prep_20260910/   (v7, 디렉터리 번들)
-skill_core_sha256: 0e8f18ae69c7e70587081f8fde18456a607b03508db2fd4cfbf53efd20c67b84  (SKILL.md)
+skill_core_sha256: 9e5d15eddb668b5f2c99a3a6df4843c35bba0a16c2aac33d02d21257e3ba2dfb  (SKILL.md)
 status: candidate (relay/ ; approved/ 승격은 아래 6절 게이트)
 author: 1C / Sol
 finality: non_final

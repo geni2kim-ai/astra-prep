@@ -36,6 +36,36 @@ CAP_DECISIONS = {"acquire", "rescope", "accept-as-open"}
 # --------------------------------------------------------------------------- #
 # parsing
 # --------------------------------------------------------------------------- #
+def _split_flow(s: str) -> list[str]:
+    """Split a single-line flow collection body on top-level commas."""
+    parts: list[str] = []
+    buf: list[str] = []
+    quote = None
+    depth = 0
+    for ch in s:
+        if quote:
+            buf.append(ch)
+            if ch == quote:
+                quote = None
+        elif ch in ("'", '"'):
+            quote = ch
+            buf.append(ch)
+        elif ch in "[{":
+            depth += 1
+            buf.append(ch)
+        elif ch in "]}":
+            depth -= 1
+            buf.append(ch)
+        elif ch == "," and depth == 0:
+            parts.append("".join(buf))
+            buf = []
+        else:
+            buf.append(ch)
+    if buf:
+        parts.append("".join(buf))
+    return [p.strip() for p in parts if p.strip()]
+
+
 def _parse_scalar(tok: str):
     tok = tok.strip()
     if tok == "" or tok == "~" or tok == "null":
@@ -44,10 +74,14 @@ def _parse_scalar(tok: str):
         return True
     if tok in ("false", "False"):
         return False
-    if tok == "[]":
-        return []
-    if tok == "{}":
-        return {}
+    if tok.startswith("[") and tok.endswith("]"):
+        return [_parse_scalar(x) for x in _split_flow(tok[1:-1])]
+    if tok.startswith("{") and tok.endswith("}"):
+        out = {}
+        for pair in _split_flow(tok[1:-1]):
+            key, _, val = pair.partition(":")
+            out[key.strip().strip("'\"")] = _parse_scalar(val.strip())
+        return out
     if len(tok) >= 2 and tok[0] == tok[-1] and tok[0] in ("'", '"'):
         return tok[1:-1]
     if re.fullmatch(r"-?[0-9]+", tok):
@@ -79,6 +113,9 @@ def _minimal_yaml(text: str):
         s = _strip_comment(raw)
         if s.strip() == "" or s.strip() == "---":
             continue
+        lead = s[: len(s) - len(s.lstrip())]
+        if "\t" in lead:
+            raise ValueError(f"tab indentation is not allowed: {s!r}")
         indent = len(s) - len(s.lstrip(" "))
         lines.append((indent, s.strip()))
 
@@ -149,10 +186,12 @@ def load_plan(path: Path):
         return json.loads(text)
     try:
         import yaml  # type: ignore
-
-        return yaml.safe_load(text)
-    except Exception:
+    except ImportError:
+        # stdlib-only fallback: the bundled block-style-subset parser
         return _minimal_yaml(text)
+    # PyYAML is available -- a parse error here is a real error, not a reason to
+    # retry with the more lenient hand parser.
+    return yaml.safe_load(text)
 
 
 # --------------------------------------------------------------------------- #

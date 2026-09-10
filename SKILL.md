@@ -8,8 +8,8 @@ description: >-
   front. Surfaces provenance drift, unreachable runtime evidence, missing edge-case
   tests, evidence-tree bloat, and mislabelled self-review at hour 0 instead of at
   closeout. Ecosystem-agnostic: the core carries no lineage, node, path, or route
-  names; each ecosystem supplies a profile. Pairs with a closeout audit (astra-shadow)
-  and complements external risk/approach advice. Korean triggers: 착수 전 계획 게이트,
+  names; each ecosystem supplies a profile. Pairs with a closeout audit that consumes
+  the same matrix, and complements external risk/approach advice. Korean triggers: 착수 전 계획 게이트,
   작업 시작 전 증거 계획, 요구사항 증거 매트릭스, provenance 드리프트 예방, 엣지케이스 사전 식별,
   런타임 증거 도달 가능성 점검, 증거 강도와 검토 독립성 분리, 자체검토 오분류 방지.
 ---

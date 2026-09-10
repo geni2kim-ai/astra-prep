@@ -27,7 +27,10 @@ def run_validator(fixture: str) -> subprocess.CompletedProcess:
 # --------------------------------------------------------------------------- #
 # valid fixtures
 # --------------------------------------------------------------------------- #
-@pytest.mark.parametrize("fixture", ["valid_minimal.yaml", "valid_drift_rebound.yaml"])
+@pytest.mark.parametrize(
+    "fixture",
+    ["valid_minimal.yaml", "valid_drift_rebound.yaml", "valid_flow_style.yaml"],
+)
 def test_valid_fixtures_pass(fixture):
     result = run_validator(fixture)
     assert result.returncode == 0, result.stdout + result.stderr
@@ -76,16 +79,28 @@ def test_schema_is_well_formed():
 # --------------------------------------------------------------------------- #
 FORBIDDEN_IN_CORE = re.compile(
     r"\b1C\b|\b1X\b|\b2G\b|\b2X\b|\b3X\b|\b3H\b|\b1A\b|\b4C\b|\b4X\b|\b4G\b|\b2O\b"
-    r"|bridge_redagent|chatgpt_review_bridge|PC4_BETA|0\.Workspace|0\.AI_Maestro"
-    r"|finality.?lint|Synapse",
+    r"|bridge_redagent|bridge_spt|chatgpt_review_bridge|redagent|astra-shadow"
+    r"|PC4|PC1|BETA_LOCAL|0\.Workspace|0\.AI_Maestro|ai[-_]maestro|Maestro"
+    r"|finality.?lint|Synapse|Syncthing|dispatch_app|\.state\.json",
     re.IGNORECASE,
 )
+
+# The ONE allowed ecosystem reference: the pointer to the shipped example profile.
+ALLOWED_CORE_MENTION = "profiles/ai-maestro.md"
 
 
 def test_core_skill_has_no_ecosystem_identifiers():
     text = (REPO / "SKILL.md").read_text(encoding="utf-8")
-    hits = sorted({m.group(0) for m in FORBIDDEN_IN_CORE.finditer(text)})
+    scrubbed = text.replace(ALLOWED_CORE_MENTION, "<PROFILE_POINTER>")
+    hits = sorted({m.group(0) for m in FORBIDDEN_IN_CORE.finditer(scrubbed)})
     assert not hits, f"SKILL.md core leaked ecosystem-specific identifiers: {hits}"
+
+
+def test_allowed_profile_pointer_appears_exactly_where_expected():
+    """The only ecosystem-flavoured token in the core is the profile pointer,
+    and it must be present (the core is useless without it)."""
+    text = (REPO / "SKILL.md").read_text(encoding="utf-8")
+    assert text.count(ALLOWED_CORE_MENTION) >= 1
 
 
 def test_profile_exists_and_is_the_only_node_specific_file():
@@ -111,6 +126,7 @@ def _load_validator_module():
     [
         "valid_minimal.yaml",
         "valid_drift_rebound.yaml",
+        "valid_flow_style.yaml",
         "invalid_two_candidates.yaml",
         "invalid_drift_no_rebind.yaml",
         "invalid_r2_no_separation.yaml",
@@ -122,6 +138,24 @@ def test_minimal_yaml_matches_pyyaml(fixture):
     mod = _load_validator_module()
     text = (FIXTURES / fixture).read_text(encoding="utf-8")
     assert mod._minimal_yaml(text) == yaml.safe_load(text)
+
+
+def test_minimal_yaml_rejects_tab_indentation():
+    mod = _load_validator_module()
+    with pytest.raises(ValueError):
+        mod._minimal_yaml("forecast:\n\tbest_reachable_cell: E1/R0\n")
+
+
+def test_pyyaml_syntax_error_is_not_masked(tmp_path):
+    """With PyYAML present, a real YAML syntax error must surface as exit 2,
+    not be silently retried with the lenient hand parser."""
+    pytest.importorskip("yaml")
+    bad = tmp_path / "bad.yaml"
+    bad.write_text("work_unit: x\n  bad: indent\n:::\n", encoding="utf-8")
+    result = subprocess.run(
+        [sys.executable, str(VALIDATOR), str(bad)], capture_output=True, text=True
+    )
+    assert result.returncode == 2, result.stdout + result.stderr
 
 
 def test_minimal_parser_path_still_validates(monkeypatch):

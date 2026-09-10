@@ -97,8 +97,9 @@ lower than forecast on either axis.
 ## Governance & standards
 
 - **File encoding**: strict UTF-8 without BOM, LF line endings.
-- **Ecosystem-agnostic core**: zero ecosystem-specific identifiers in `SKILL.md`
-  (enforced by a grep gate in `tests/`).
+- **Ecosystem-agnostic core**: no ecosystem-specific bindings in `SKILL.md` — the only
+  ecosystem-flavoured token is the pointer to the shipped example profile (enforced by a
+  scrub-then-fail grep gate in `tests/`).
 - **Authority boundary**: planning-only. Does not grant finality or deploy code.
 
 *Maintained by the AI Maestro Engineering Team.*

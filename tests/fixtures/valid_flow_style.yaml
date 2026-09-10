@@ -1,0 +1,25 @@
+work_unit: "sample unit using YAML flow-style collections"
+actor: "actor-G"
+generated_at: "2026-09-10T18:00:00Z"
+baseline_id: "commit:fff666"
+starting_candidate: {type: commit, ref: "fff666", sha256: "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"}
+provenance:
+  handoff: {path: "handoff/latest.md", sha256: "NONE_RESOLVED"}
+  state: {path: "state/cursor.json", sha256: "NONE_RESOLVED"}
+  tree: {worktree: "main-worktree", branch: "main"}
+  drift_at_start: false
+requirements:
+  - id: R-001
+    text: "feature does X"
+    implementation: "x.py"
+    module: null
+    target: {evidence_level: E2, review_independence: R0}
+    reachable: true
+    capability_decision: null
+    accept_as_open_end_state: null
+review: {required: false, independence_target: R0, author_reviewer_distinct: null, route_id: null, bundle_path: null}
+artifact_hygiene: []
+forecast:
+  best_reachable_cell: "E2/R0"
+  dispositions: [RUNTIME_NOT_RUN, CAPABILITY_GAP]
+  raise_with_caller: [confirm scope with caller]
