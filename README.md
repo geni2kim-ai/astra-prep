@@ -22,19 +22,20 @@ Instead of discovering provenance drift, missing runtime evidence, or overlooked
    - **Level 3**: Build or package creation (e.g., APK assemble, binary compilation)
    - **Level 4**: Rendered interactive runtime (emulator, device, browser)
    - **Level 5**: Field / integration smoke (live APIs, external providers)
-   - **Level 6**: Independent external review (adversarial audit gate)
+   - **Level 6**: Independent external review (adversarial audit gate) — by a reviewer with no stake in the outcome and no prior context; a review by anyone who touched the source is Level 1, not Level 6.
    *Rule: A lower level is never claimed as a substitute for a higher level.*
 
 3. **Selective Domain Pre-checks**:
    Pre-populates requirements with domain-specific edge cases:
    - date-time: Timezones, midnight/late-night boundary, rollover, rounding reversal.
-   - 
-ealtime: Idempotency, duplicate-request prevention, distinct states (live/stale/planned/
-o-query).
+   - realtime: Idempotency, duplicate-request prevention, distinct states (live/stale/planned/no-query).
    - ui: System bar boundaries, touch targets, contrast, loading/empty/error states, responsive widths.
-   - handoff: Single immutable candidate set, updating handoff after the final mutation.
-   - packet-governance: ASCII/no-BOM format, single write-site, finality-lint safety.
+   - handoff: Single immutable candidate set, one clean end-to-end run as the anchor, updating handoff after the final mutation.
+   - packet-governance: ASCII/no-BOM format, single write-site, finality-lint safety, emit-provenance (no preview/no-emission markers into an emitted packet).
+   - source-lineage: Reconcile the current tree against a frozen baseline at hour 0 (match count, per-path drift, missing); freeze HEAD until the consolidating packet is out.
    - db-migration: Forward/rollback paths, idempotency, row-count expectations.
+
+   **Evidence & artifact hygiene** (v6): plan where each artifact is written (host-local vs a synced tree), keep one authoritative run, no build output or `.git` in a synced tree, one draft version of a consolidating doc.
 
 4. **Capability Gaps & Upfront Decisions**:
    For any target verification level the executing node cannot reach, it must explicitly decide:
@@ -64,7 +65,7 @@ o-query).
 
 Before beginning a feature or multi-step work unit, produce the following concise plan:
 
-`markdown
+```markdown
 ## Pre-work plan -- <work unit>
 
 ### 1. Bindings resolved
@@ -85,18 +86,21 @@ Before beginning a feature or multi-step work unit, produce the following concis
 |--------|-------------|-----------------------|--------|-------------------|------------|--------------------|
 
 ### 4. Domain pre-check rows added
-- module <id>: <added requirement rows>
+- module <id>: <added requirement rows>  (incl. source-lineage reconciliation if a frozen baseline applies)
 
-### 5. Capability gaps -- decision per gap
+### 5. Evidence and artifact hygiene
+- where each artifact is written (host-local / synced), the one authoritative run, the synced-footprint budget
+
+### 6. Capability gaps -- decision per gap
 | req_id | gap | acquire / rescope / accept-as-open | Rationale |
 
-### 6. Independent-review plan
-- required? <yes/no>   route: <route_id>   bundle started? <yes/no, path>
+### 7. Independent-review plan
+- required? <yes/no>   independent per the level-6 bar?   route: <route_id>   bundle started? <yes/no, path>
 
-### 7. Closeout-readiness forecast
-- best reachable: CANDIDATE_READY  |  <RUNTIME_NOT_RUN / PROVENANCE_DRIFT_AT_START / CAPABILITY_GAP>
+### 8. Closeout-readiness forecast
+- best reachable: CANDIDATE_READY  |  <RUNTIME_NOT_RUN / PROVENANCE_DRIFT_AT_START / CAPABILITY_GAP / EVIDENCE_TREE_BLOAT_RISK>
 - raise with caller NOW: <items>
-`
+```
 
 ---
 

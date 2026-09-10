@@ -2,9 +2,9 @@
 
 ```yaml
 document_id: ASTRA-PREP-USAGE-20260910
-skill: Hub/skills/relay/astra_prep_20260910/SKILL.md  (v5)
-skill_sha256: e89e714f22df54c0ad49ef0186bc6028809822666cb604d829c3a305fc34a82c
-status: FINAL_CANDIDATE  (relay/ ; approved/ 승격은 아래 6절 게이트)
+skill: Hub/skills/relay/astra_prep_20260910/SKILL.md  (v6)
+skill_sha256: 7b637653d78714f4643ab1304f136a67b91066a7cae959cc1b4aee9b20c2d949
+status: candidate (relay/ ; approved/ 승격은 아래 6절 게이트)
 author: 1C / Sol
 finality: non_final
 ```
@@ -83,17 +83,24 @@ plan 문서**를 산출하는 것. 자동 툴이 아니다.
 |--------|-------------|-----------------|--------|----------------|-----------|-------------|
 
 ### 4. Domain pre-check rows added
-- module <id>: <추가된 req 행들>
+- module <id>: <추가된 req 행들>   (frozen baseline이 있으면 `source-lineage` 대조: 일치 수 / per-path drift / missing)
 
-### 5. Capability gaps -- decision per gap
+### 5. Evidence and artifact hygiene
+- 산출물별 기록 위치: host-local | synced (synced면 retention 사유)
+- authoritative run 하나 지정; superseded run은 prune 또는 synced 밖으로
+- synced 트리에 빌드 산출물(APK/번들/tar)/`.git` 없음; 통합 문서/매트릭스는 한 버전만
+- synced footprint 예산: <bounded | EVIDENCE_TREE_BLOAT_RISK>
+
+### 6. Capability gaps -- decision per gap
 | req_id | gap | acquire / rescope / accept-as-open | 근거 |
 
-### 6. Independent-review plan
-- required? <yes/no>   route: <route_id>   bundle started? <yes/no, 위치>
+### 7. Independent-review plan
+- required? <yes/no>   level-6 독립? (소스를 만진 사람은 level 6 아님)   route: <route_id>   bundle started? <yes/no, 위치>
 
-### 7. Closeout-readiness forecast
+### 8. Closeout-readiness forecast
 - best reachable: CANDIDATE_READY  |  <RUNTIME_NOT_RUN / PROVENANCE_DRIFT_AT_START /
-  INDEPENDENT_REVIEW_NOT_RUN / TRANSPORT_UNVERIFIED / CAPABILITY_GAP / SCOPE_RENEGOTIATION_NEEDED>
+  INDEPENDENT_REVIEW_NOT_RUN / TRANSPORT_UNVERIFIED / CAPABILITY_GAP /
+  SCOPE_RENEGOTIATION_NEEDED / EVIDENCE_TREE_BLOAT_RISK>
 - raise with caller NOW: <항목들>
 
 (candidate-only / non-final / no-authority. 이 어휘를 패킷 본문·핸드오프 산문에 넣지 말 것.)
@@ -224,3 +231,6 @@ relay/astra_prep_20260910/   (현재)
 - disposition 어휘(`CANDIDATE_READY` 등)를 패킷 본문/핸드오프에 붙여넣기 → finality-lint.
 - 독립검토 번들을 마무리에 몰아서 조립 → transport 혼동. 작업과 동시에.
 - Beta에서 L4~L5 미도달을 "실패"로 취급 → `live_effect=DENIED` 하의 정상. accept-as-open.
+- 소스를 만진 워커/참가자의 검토를 level 6 독립 증거로 제출 → level 1로 표기.
+- 증거를 synced 트리에 무제한 축적(중복 run, APK, `.git`) → 착수 전에 위치·예산 계획.
+- collector가 실패한 run에 나중 XML 스크레이프를 이어붙여 test-count 주장 → clean end-to-end run 아님.

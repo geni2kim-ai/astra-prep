@@ -24,7 +24,7 @@ make them usable as an **all-node common skill**.
 | usage guide | `./ASTRA_PREP_USAGE.md` |
 | meeting-room session #5 minutes | `D:/Shared/0.AI_Maestro_Shared/src/dispatch_app/meeting_room/minutes/MEETING_20260910_sess5.md` |
 | tunnel notice to Beta | `D:/Shared/0.AI_Maestro_tunnel/1C_TO_4C_4X_SESSION5_BETA_TO_LIVE_ALIGNMENT_20260910.md` |
-| current SKILL.md sha256 | `e89e714f22df54c0ad49ef0186bc6028809822666cb604d829c3a305fc34a82c` (v5) |
+| current SKILL.md sha256 | `7b637653d78714f4643ab1304f136a67b91066a7cae959cc1b4aee9b20c2d949` (v6) |
 
 If your computed digest does not match, do not use the file — report the mismatch.
 
@@ -47,6 +47,7 @@ check (see "Before approved/ promotion" below).
 | v3 | 1X / Claude | **1X-reported, change summary + immutable ref pending** | pending | `?` (v3 artifact not independently preserved -- transition v2->v4 cannot be reconstructed from hashes alone; recorded as a gap, not inferred) | pending 1X evidence |
 | v4 | 1X / Claude | **1X-reported**: lineage binding hardening, route/transport contract fields, shadow-mapping section, UTF-8/no-BOM/LF loader contract, added dispositions (`TRANSPORT_UNVERIFIED`, `CAPABILITY_GAP`, `SCOPE_RENEGOTIATION_NEEDED`), stable `requirement_id`/module IDs | 1X edit, 2026-09-10 ~09:33 | `57ce1aed57b042c606195ed5a987d60c41bf641cee16134b63aaffd1bb5abaca` | pending 1X author-bound ref (readback of current bytes confirmed by 1C/4X/1X in session #5, ~post 156-161; authorship of the v2->v4 changes not yet independently bound) |
 | v5 | 1C / Claude | review supplement: per-lineage binding starting-point table (incl. Beta), "Beta-node forecast is legitimately capped" note; usage guide authored separately | 1C edit, 2026-09-10 (post session #5) | `e89e714f22df54c0ad49ef0186bc6028809822666cb604d829c3a305fc34a82c` | this README (v5 line) + `ASTRA_PREP_USAGE.md` |
+| v6 | 1C / Claude | evidence-integrity upgrade grounded in the 1X 2026-09-09 ArriveBy case (~20 findings): new step 3b "Evidence and artifact hygiene"; new `source-lineage` module + frozen-baseline reconciliation; `packet-governance` emit-provenance row (aligns with the 260910-1X308 guard spec); step 5 level-6 independence bar ("a review by anyone who touched the source is not independent"); handoff "one clean end-to-end run" rule; `EVIDENCE_TREE_BLOAT_RISK` disposition | 1C edit, 2026-09-10 (hourly tick) | `7b637653d78714f4643ab1304f136a67b91066a7cae959cc1b4aee9b20c2d949` | this README (v6 line) + `ASTRA_PREP_UPGRADE_ANALYSIS_FROM_1X_260909_1C_20260910.md` |
 
 **v3/v4 authorship stays `1X-reported / unverified`** until 1X supplies per-revision
 change summaries and an author-bound immutable reference (review/receipt/commit). A
@@ -114,6 +115,6 @@ Then: `approved/astra_prep_20260910/` → Beta `skills/active_shared/astra_prep_
 
 | File | Purpose |
 |---|---|
-| `SKILL.md` | the skill (v5) |
+| `SKILL.md` | the skill (v6) |
 | `ASTRA_PREP_USAGE.md` | usage guide — per-lineage invocation, output template, worked examples (Claude code + Beta governance-doc), promotion gate |
 | `README_RELAY.md` | this file — provenance, revision history, relay/promotion status |

@@ -5,13 +5,14 @@ description: >-
   fix the authoritative starting point, turn every requirement into a planned-evidence
   target, name the verification level each target will reach and the capability gaps
   now, and choose the independent-review route up front. Surfaces provenance drift,
-  unreachable runtime evidence, and missing edge-case tests at hour 0 instead of at
-  closeout. Node-agnostic: every lineage resolves its own bindings from its
-  authoritative node registry; never infer or copy a lineage from this description.
+  unreachable runtime evidence, missing edge-case tests, synced-tree evidence bloat,
+  emit-provenance leaks, mislabelled self-review, and frozen-baseline drift at hour 0
+  instead of at closeout. Node-agnostic: every lineage resolves its own bindings from
+  its authoritative node registry; never infer or copy a lineage from this description.
   Pairs with astra-shadow
   (closeout audit) and complements bridge_spt (risk/approach advice). Korean triggers:
   착수 전 계획 게이트, 작업 시작 전 증거 계획, 요구사항 증거 매트릭스, provenance 드리프트 예방,
-  엣지케이스 사전 식별, 런타임 증거 도달 가능성 점검.
+  엣지케이스 사전 식별, 런타임 증거 도달 가능성 점검, 증거트리 비대화 예방, 자체검토 오분류 방지.
 ---
 
 # astra-prep -- pre-work evidence & verification planning (node-agnostic)
@@ -120,10 +121,11 @@ layout; a compiling module is not proof of behavior; a passing build is not runt
 ### 3. Expand requirements with domain pre-checks (selective modules)
 
 Load only the modules the request actually touches. Use stable module IDs such as
-`date-time`, `realtime`, `ui`, `handoff`, `packet-governance`, and `db-migration`;
-each selected module adds requirement rows now so the edge case is planned, not
-discovered late. These are shared checklist sections, not an implicit runtime plugin
-loader. If a node supplies an external module, record its source, version, and hash.
+`date-time`, `realtime`, `ui`, `handoff`, `packet-governance`, `db-migration`, and
+`source-lineage`; each selected module adds requirement rows now so the edge case is
+planned, not discovered late. These are shared checklist sections, not an implicit
+runtime plugin loader. If a node supplies an external module, record its source,
+version, and hash.
 
 - **date / time input:** today-default, timezone, invalid + restored value, month/day
   and year rollover, minute rounding, midnight and late-night boundary, and whether a
@@ -140,12 +142,41 @@ loader. If a node supplies an external module, record its source, version, and h
   layouts both considered.
 - **multi-agent / handoff:** the final candidate will have one unambiguous
   commit/tree/test-profile/artifact set; superseded candidates get labelled; the
-  handoff/state is updated after the last mutation, not before.
+  handoff/state is updated after the last mutation, not before. One clean end-to-end
+  verification run is the anchor -- a run whose collector failed and was patched with a
+  later XML-only scrape is not a clean run and is not a test-count claim.
 - **packet / index / governance doc:** ASCII / no-BOM / title / sequence rules; the
   same-task index update if the governing rule requires it; single write-site;
-  finality-lint-safe wording.
+  finality-lint-safe wording; a packet entering `emit()` carries no `preview_only`
+  state, no "no packet emitted" / draft-identity marker, and no body-vs-envelope
+  contradiction -- historical-correction wording lives under an explicit historical
+  namespace only.
+- **source-lineage:** when the work builds on a frozen baseline (a peer's frozen R1
+  reference, a required-frozen-path inventory), reconcile the current tree against it
+  now -- match count, per-path drift, missing paths. An undocumented drift from a frozen
+  baseline is `PROVENANCE_DRIFT_AT_START`. For multi-day reconstruction with likely
+  candidate churn, name the freeze point and state that HEAD and the branch set do not
+  move until the consolidating packet is emitted.
 - **DB / migration:** forward + rollback path; idempotency; row-count expectation
   before and after; auth/lease/owner gate named.
+
+### 3b. Evidence and artifact hygiene
+
+Plan now where each artifact the work will produce is written and how large it gets.
+
+- **Location:** host-local vs a Syncthing-synced tree. Anything written into a synced
+  governance/workspace tree is declared with a retention reason. A rotating or
+  self-duplicating artifact (a log, a per-run report set) written into a synced tree is
+  a finding at hour 0, not at closeout.
+- **One authoritative run kept:** name which verification run is the anchor; superseded
+  runs are pruned or moved out of the synced tree, not left to accumulate.
+- **No build output in the synced tree** without a stated reason: APKs, bundles, source
+  tars, and any `.git` directory left inside an evidence folder.
+- **Draft discipline:** one working version of a consolidating doc or matrix, superseded
+  in place -- not N disagreeing draft files.
+
+Forecast row: `EVIDENCE_TREE_BLOAT_RISK` if the plan cannot keep the synced footprint
+bounded.
 
 ### 4. Turn the ladder into a decision
 
@@ -156,7 +187,11 @@ requirement, or **accept-as-open** and tell the caller it will end `STATIC_ONLY`
 
 ### 5. Independent-review plan
 
-Decide now: is an independent adversarial review required for this work unit? If yes,
+Decide now: is an independent adversarial review required for this work unit? A review
+by anyone who authored or modified the source under review is **not** level 6: level 6
+requires no stake in the outcome and no prior context. A same-worker or participant
+"static review" is level 1 -- label it that way and do not file it as independent
+evidence. If yes,
 pick the transport tier from the step-0 table -- and if the tier your lineage would
 normally use is unavailable (e.g. a Beta node cannot call `bridge_redagent`), record the
   substitute tier now, not at closeout. Start assembling the portable, secret-screened
@@ -174,7 +209,7 @@ normally use is unavailable (e.g. a Beta node cannot call `bridge_redagent`), re
 Given the plan, state the best disposition realistically reachable at closeout:
 `CANDIDATE_READY` (all targets reachable), or one/more of `RUNTIME_NOT_RUN`,
 `PROVENANCE_DRIFT_AT_START`, `INDEPENDENT_REVIEW_NOT_RUN`, `TRANSPORT_UNVERIFIED`,
-`CAPABILITY_GAP`, `SCOPE_RENEGOTIATION_NEEDED`.
+`CAPABILITY_GAP`, `SCOPE_RENEGOTIATION_NEEDED`, `EVIDENCE_TREE_BLOAT_RISK`.
 
 If the forecast is anything other than `CANDIDATE_READY`, surface it to the caller / USER
 **before** starting, as scope items -- not as a surprise in the completion report.
@@ -192,10 +227,13 @@ worktree/branch or `NO_WORKTREE`, starting candidate, test runner, and review ro
    worktree/branch or `NO_WORKTREE`, starting candidate, test runner, review route)
 2. starting-point check result (clean, or `PROVENANCE_DRIFT_AT_START` with the drift)
 3. requirement -> planned-evidence matrix (with target level + reachability)
-4. domain pre-check rows added
-5. capability gaps + the acquire / rescope / accept-as-open decision for each
-6. independent-review plan (required? route? bundle started?)
-7. closeout-readiness forecast + anything to raise with the caller now
+4. domain pre-check rows added (incl. `source-lineage` reconciliation if a frozen
+   baseline applies)
+5. evidence and artifact hygiene: where each artifact is written (host-local / synced),
+   the one authoritative run, the synced-footprint budget
+6. capability gaps + the acquire / rescope / accept-as-open decision for each
+7. independent-review plan (required? independent per the level-6 bar? route? bundle started?)
+8. closeout-readiness forecast + anything to raise with the caller now
 
 Keep candidate-only / non-final / no-authority visible. Hand the matrix to `astra-shadow`
 at closeout; it fills the same rows with actuals and issues the real shadow result.
@@ -208,9 +246,10 @@ at closeout; it fills the same rows with actuals and issues the real shadow resu
 - Map `PROVENANCE_DRIFT_AT_START` to closeout `PROVENANCE_DRIFT`; map
   `CAPABILITY_GAP`/`accept-as-open` to the actual `STATIC_ONLY`, `RUNTIME_NOT_RUN`, or
   `UNVERIFIED` reason; map `INDEPENDENT_REVIEW_NOT_RUN` and `TRANSPORT_UNVERIFIED`
-  without collapsing them into PASS; and map `SCOPE_RENEGOTIATION_NEEDED` to
-  closeout `NEEDS_REWORK` or a newly scoped work unit. `CANDIDATE_READY` is a forecast,
-  never an actual approval or closeout verdict.
+  without collapsing them into PASS; map `SCOPE_RENEGOTIATION_NEEDED` to
+  closeout `NEEDS_REWORK` or a newly scoped work unit; map `EVIDENCE_TREE_BLOAT_RISK` to
+  the closeout evidence-footprint check (synced size, duplicate runs, stray build output
+  or `.git`). `CANDIDATE_READY` is a forecast, never an actual approval or closeout verdict.
 - If work during the unit changed the starting candidate (new commit, rebuilt artifact),
   re-run step 1 -- the plan is rebound to the new base or it is stale.
 
@@ -229,3 +268,7 @@ the Korean triggers or silently use a partial skill.
 | Edge case (late-night rollover, stale-request race) never tested | found in production or by an external reviewer | added as a requirement row before coding |
 | Independent-review bundle incomplete / scrambled at the end | transport retries, hash mismatches, `NOT_RUN` | bundle assembled alongside the work |
 | Completion report negotiates scope after the fact | caller surprised at "done, but..." | scope items raised before work starts |
+| Evidence tree grows to hundreds of MB in a synced folder; duplicate runs; stray `.git` / APKs | found in a cleanup finding weeks later | artifact locations + one-run rule + synced budget planned at hour 0 |
+| A packet reaches every inbox carrying "no packet emitted" / preview text | erratum packet, recurring | emit-provenance planned as a `packet-governance` row |
+| A worker's own review of code it changed is filed as independent evidence | mislabelled level 6; caught in adversarial review | level-6 independence bar stated up front |
+| Current tree has silently drifted from a frozen peer baseline | undocumented; surfaces as a per-path audit later | `source-lineage` reconciliation at hour 0; drift is `PROVENANCE_DRIFT_AT_START` |
