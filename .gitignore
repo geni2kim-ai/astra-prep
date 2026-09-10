@@ -1,0 +1,23 @@
+# Temporary and backup files
+*.bak
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Sensitive files
+.env
+*.key
+*.p12
+*.pem
+*.keystore
