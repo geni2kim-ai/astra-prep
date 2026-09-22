@@ -1,0 +1,202 @@
+{
+ "work_unit": "20260919-2G-ASKILL-V71-R48",
+ "actor": "2G",
+ "generated_at": "2026-09-19T06:40:00+09:00",
+ "baseline_id": "2G-state-20260919-2G547-c6cf4054",
+ "starting_candidate": {
+  "type": "doc",
+  "ref": "D:/Shared/0.Workspace/Node/2G/drafts/prework-plan-2g-20260919-r47-SIM-v71-PATHB.json",
+  "sha256": "27dc2211c844ea2a2aeda377b67bd9f2a9e27225217f779a400e7ee34e4dcbac"
+ },
+ "provenance": {
+  "handoff": {
+   "path": "D:/Shared/0.Workspace/Node/2G/memory_2g.md",
+   "sha256": "d81045d97e83a7e42053d5f1c2dc5785c3ac70219ed27d28c0a4d30bdd307588"
+  },
+  "state": {
+   "path": "D:/Shared/0.Workspace/Node/2G/.state.json",
+   "sha256": "c6cf40541fbf7ce0278bc6f83799b8e71619bfb2f6ff66f1df860a51525c006a"
+  },
+  "tree": {
+   "worktree": "NO_WORKTREE",
+   "branch": null
+  },
+  "drift_at_start": false
+ },
+ "requirements": [
+  {
+   "id": "R-1",
+   "text": "S-0 fix: candidate v7.1 validator enforces the published sidecar schema structurally (C10: schema-declared required keys and additionalProperties=false at every declared level, driven by the schema file itself) and checks the new optional sections C11 evidence_outputs / C12 control_copies / C13 coverage; the S-0 regression (an undeclared top-level key exiting 0 under v7) must fail closed under v7.1",
+   "implementation": "full rewrite of scripts/validate_prework.py in the candidate bundle; bogus-field fixture run under BOTH v7 and v7.1 validators for the before/after proof",
+   "module": "source-lineage",
+   "target": {
+    "evidence_level": "E2",
+    "review_independence": "R1"
+   },
+   "reachable": true,
+   "coverage": [
+    {
+     "item": "action_registry_store.py",
+     "demonstration": "probe and regression artifacts",
+     "target": "E2/R1"
+    },
+    {
+     "item": "runtime_schema.py",
+     "demonstration": "reading-only (accept-as-open)",
+     "target": "E1/R0"
+    }
+   ]
+  },
+  {
+   "id": "R-2",
+   "text": "schema v1.1: optional evidence_outputs (artifact/writer/immutability), control_copies (path/pin_sha256/verified_before_use/execution_allowed_after_verification/recreation_procedure), requirements[].coverage (item/demonstration/target); additionalProperties=false maintained everywhere",
+   "implementation": "targeted edits to schemas/prework-plan.schema.json in the candidate bundle",
+   "module": "source-lineage",
+   "target": {
+    "evidence_level": "E1",
+    "review_independence": "R1"
+   },
+   "reachable": true,
+   "coverage": [
+    {
+     "item": "action_registry_store.py",
+     "demonstration": "probe and regression artifacts",
+     "target": "E2/R1"
+    },
+    {
+     "item": "runtime_schema.py",
+     "demonstration": "reading-only (accept-as-open)",
+     "target": "E1/R0"
+    }
+   ]
+  },
+  {
+   "id": "R-3",
+   "text": "core deltas: SKILL.md step-3 hygiene rules + output-template section-5 lines + version-history block; domain-checks.md packet-governance emit-prescan and time-scoped mutable-state rows plus the three hygiene rules; the core-first grep gate must still pass (no ecosystem identifiers in SKILL.md)",
+   "implementation": "anchor-based patches asserted loudly; grep gate re-run inside the bundle tests",
+   "module": "packet-governance",
+   "target": {
+    "evidence_level": "E1",
+    "review_independence": "R1"
+   },
+   "reachable": true
+  },
+  {
+   "id": "R-4",
+   "text": "tests: extend the validator tests with the S-0 regression and C11-C13 cases, add JSON fixtures, run the full candidate-bundle pytest suite green with zero regression on the seven v7-era fixtures",
+   "implementation": "pytest run in the candidate bundle; the R47 SIM PathB plan (v1.1-conformant form) must validate exit 0 under v7.1",
+   "module": "handoff",
+   "target": {
+    "evidence_level": "E2",
+    "review_independence": "R1"
+   },
+   "reachable": true
+  },
+  {
+   "id": "R-5",
+   "text": "candidate packaging: CANDIDATE_README (status/deltas/hash manifest), README_RELAY addendum + USAGE addendum clearly marked as a 2G draft candidate (NOT relay history); the pinned v7 bundle files re-hashed and proven untouched",
+   "implementation": "bundle docs + hash manifest; byte-compare of the 8 pinned v7 files against the 2G ack values",
+   "module": "source-lineage",
+   "target": {
+    "evidence_level": "E1",
+    "review_independence": "R1"
+   },
+   "reachable": true
+  },
+  {
+   "id": "R-6",
+   "text": "redagent Tier-1 on the whole unit (separate GLM MID subagent), adjudicate findings, emit one Report packet to 1C (cc 1X/3X) via lane_guard, close memory/state byte-safely",
+   "implementation": "manifest-before-dispatch + subagent review + closeout record + G7 emit + script-file close",
+   "module": "packet-governance",
+   "target": {
+    "evidence_level": "E2",
+    "review_independence": "R1"
+   },
+   "reachable": true
+  },
+  {
+   "id": "R-7",
+   "text": "deliverable zip in Downloads named AI_Maestro_Action_Registry_v080_R48_Hardened_20260919.zip containing the hardened registry tree (D1/D2/D3 fixes), the v7.1 candidate bundle, the R47 evidence bundle, and R48 session artifacts; cache artifacts excluded; integrity-tested with sha256 recorded",
+   "implementation": "python zipfile build + testzip + hash",
+   "module": "packet-governance",
+   "target": {
+    "evidence_level": "E1",
+    "review_independence": "R1"
+   },
+   "reachable": true
+  }
+ ],
+ "review": {
+  "required": true,
+  "independence_target": "R1",
+  "author_reviewer_distinct": true,
+  "route_id": "redagent-mid-subagent-glm-local-nonfinal",
+  "bundle_path": "D:/Shared/0.Workspace/Node/2G/redagent_closeout_manifest_2g_20260919_r48.md"
+ },
+ "artifact_hygiene": [
+  {
+   "artifact": "prework-plan-2g-20260919-r48.json",
+   "location": "synced",
+   "retention_reason": "astra-prep gate artifact"
+  },
+  {
+   "artifact": "ASTRA_PREP_PLAN_2G_20260919_R48.md",
+   "location": "synced",
+   "retention_reason": "plan prose pair"
+  },
+  {
+   "artifact": "drafts/astra_prep_v71_candidate_2G_20260919/",
+   "location": "synced",
+   "retention_reason": "the v7.1 candidate deliverable (candidate-only; promotion is 1C-owned)"
+  },
+  {
+   "artifact": "redagent_closeout_manifest_2g_20260919_r48.md",
+   "location": "synced",
+   "retention_reason": "review manifest"
+  },
+  {
+   "artifact": "redagent_closeout_record_2g_20260919_r48.md",
+   "location": "synced",
+   "retention_reason": "review receipt and dispositions"
+  },
+  {
+   "artifact": "emit_spec_2g548_r48.json",
+   "location": "synced",
+   "retention_reason": "emit spec (id allocated at emit)"
+  }
+ ],
+ "forecast": {
+  "best_reachable_cell": "E2/R1",
+  "dispositions": [
+   "INDEPENDENT_REVIEW_NOT_RUN",
+   "CAPABILITY_GAP"
+  ],
+  "raise_with_caller": [
+   "the candidate bundle is a 2G draft: GOV-SKILL-001 promotion (re-pin, cross-lineage review, re-ACK by all nodes) stays with 1C/1X; nothing here changes the pinned v7 bytes",
+   "R2 external review stays unavailable (PC2 codex CLI token revoked since 260909) - the unit ends at R1"
+  ]
+ },
+ "evidence_outputs": [
+  {
+   "artifact": "probe_results_PRE_<ts>.json",
+   "writer": "tools/example_probe.py",
+   "immutability": "timestamped-path",
+   "run": "pre-fix"
+  },
+  {
+   "artifact": "probe_results_POST_<ts>.json",
+   "writer": "tools/example_probe.py",
+   "immutability": "timestamped-path",
+   "run": "post-fix"
+  }
+ ],
+ "control_copies": [
+  {
+   "path": "D:/2G_Work/pkg_pristine_check",
+   "pin_sha256": "3aacfede9660c6be4690895d8a05e10c2ce406405df3fc91a27df0cbd1a0be39",
+   "verified_before_use": false,
+   "execution_allowed_after_verification": false,
+   "recreation_procedure": null
+  }
+ ]
+}

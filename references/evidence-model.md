@@ -37,6 +37,13 @@ different `E`.
 | `R1` | Separate reviewer | a different person/agent with shared context or stake -- same team, same task, same lineage, was in the room | different identity, but not disinterested |
 | `R2` | Independent external | no stake in the outcome, no prior context, did **not** author or modify the source | could this reviewer be surprised by the result? |
 
+**Same-lineage review is `R1` by default.** A reviewer from the same lineage (for
+example a `redagent` MID subagent spawned by the authoring node) shares tooling,
+context, and stake with the author even when its identity is separate; it is `R1`.
+Claiming `R2` for it requires the governing model to explicitly prove no prior
+context and no stake -- absent that proof, the claim is the mislabel this axis
+exists to catch.
+
 A "static review" by a participant is `E1/R0` or `E1/R1` -- never `R2`. Filing it as
 independent evidence is the failure this axis prevents.
 
@@ -64,8 +71,13 @@ ways, and the plan should say which.
   acquire / rescope / accept-as-open. `accept-as-open` names the honest end cell, e.g.
   "target `E4/R2`, will end `E1/R0`".
 - `R2` in any target requires the review route planned in step 5 and, in the sidecar,
-  `review.author_reviewer_distinct = true`. The validator rejects an `R2` target without
-  it.
+  proven review independence -- more than a self-attested boolean. The validator
+  (check C6) rejects an `R2` target unless the review block carries
+  `author_reviewer_distinct = true` plus a real `reviewer_id`, a non-placeholder
+  `route_id` and `bundle_path`, a `receipt` pointer whose `sha256` is the hash of the
+  receipt artifact, and a bound `result_ref`. `NOT_RUN` / `TBD` /
+  `NONE_RESOLVED` placeholders with an `R2` target fail validation: the plan ends at
+  `R1` and forecasts `INDEPENDENT_REVIEW_NOT_RUN`.
 
 ## Legacy back-map (for un-migrated consumers)
 

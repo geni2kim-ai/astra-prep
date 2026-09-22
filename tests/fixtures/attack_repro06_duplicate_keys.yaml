@@ -1,15 +1,17 @@
-work_unit: "sample bounded unit"
-actor: "actor-A"
-generated_at: "2026-09-10T12:00:00Z"
-baseline_id: "commit:abc123"
+# REPRO-06 attack: duplicate YAML mapping keys (1X review F-03).
+# Both parser modes must reject this file; the last value must never silently win.
+work_unit: "duplicate key attack"
+actor: "actor-attack"
+generated_at: "2026-09-19T00:00:00Z"
+baseline_id: "commit:attack"
 starting_candidate:
   type: commit
-  ref: "abc123"
-  sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+  ref: "attack1"
+  sha256: "4444444444444444444444444444444444444444444444444444444444444444"
 provenance:
   handoff:
     path: "handoff/latest.md"
-    sha256: "1111111111111111111111111111111111111111111111111111111111111111"
+    sha256: "5555555555555555555555555555555555555555555555555555555555555555"
   state:
     path: "state/cursor.json"
     sha256: "NONE_RESOLVED"
@@ -17,13 +19,14 @@ provenance:
     worktree: "main-worktree"
     branch: "main"
   drift_at_start: false
+  drift_at_start: true
 starting_point_readback:
   candidate_path: "main-worktree"
-  candidate_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+  candidate_sha256: "4444444444444444444444444444444444444444444444444444444444444444"
   points_at_candidate: true
   git_state:
     kind: git
-    head: "abc123"
+    head: "attack1"
     branch: "main"
     clean: true
 requirements:
@@ -35,6 +38,7 @@ requirements:
       evidence_level: E2
       review_independence: R0
     reachable: true
+    reachable: false
     capability_decision: null
     accept_as_open_end_state: null
 review:
@@ -43,10 +47,7 @@ review:
   author_reviewer_distinct: null
   route_id: null
   bundle_path: null
-artifact_hygiene:
-  - artifact: "test run log"
-    location: host-local
-    retention_reason: null
+artifact_hygiene: []
 forecast:
   best_reachable_cell: "E2/R0"
   dispositions: []

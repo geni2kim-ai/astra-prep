@@ -1,4 +1,4 @@
-# astra-prep
+# astra-prep (v7.1)
 
 > **Pre-Work Evidence & Verification Planning Gate**
 > *Fix the starting point, plan every requirement's evidence on two independent axes, and disclose capability gaps at hour 0 — not at closeout.*
@@ -49,32 +49,33 @@ hygiene. See [`references/domain-checks.md`](./references/domain-checks.md).
 For any target cell the actor cannot reach: `acquire`, `rescope`, or `accept-as-open`
 (which names the honest end cell, e.g. "target `E4/R2`, will end `E1/R0`").
 
-### 5. Machine-readable contract + fail-closed validator
+### 5. Machine-readable contract + fail-closed validator (C1–C15)
 
 The plan has a YAML/JSON sidecar
 ([`schemas/prework-plan.schema.json`](./schemas/prework-plan.schema.json)) checked by
 [`scripts/validate_prework.py`](./scripts/validate_prework.py) — stdlib only, no
-third-party dependency. It **rejects** a plan that has more than one starting candidate,
-a duplicate/malformed requirement id, a missing target cell, an unreachable requirement
-with no capability decision, drift that was not rebound, an `R2` target with no proven
-author/reviewer separation, or a shared artifact with no retention reason.
+third-party dependency. It enforces **15 strict checks (C1–C15)** covering schema
+keywords, duplicate keys, trailing newline regex injection, starting-point readbacks,
+evidence immutability, and genuine reviewer independence.
 
 ```bash
 python scripts/validate_prework.py path/to/prework-plan.yaml
 ```
 
-### 6. Ecosystem-agnostic core + profiles
+---
 
-`SKILL.md` names no concrete actor, path, route, or vocabulary — those live in a
-**profile** ([`profiles/ai-maestro.md`](./profiles/ai-maestro.md) is the one shipped
-here). Editing a profile does not change the workflow or the evidence model; the core is
-edited once and every actor picks it up unchanged.
+## What's new in v7.1 (Hardened Against Adversarial Audits)
 
-### 7. Symbiosis with a closeout audit
+The `v7.1` release expands the test suite to **50 unit tests** (including dedicated
+adversarial regression fixtures in `tests/test_attack_regressions.py`):
 
-`astra-prep` authors the pre-work matrix at start; a closeout audit (`astra-shadow`)
-fills the same rows with the `E/R` cell actually reached and flags any row that finished
-lower than forecast on either axis.
+1. **C10 Schema Conformance Enforced (Fail-Closed):** Every declared level is walked against the schema; undeclared or missing required keys are rejected immediately.
+2. **C11 Evidence Output Immutability (`evidence_outputs`):** Self-writing scripts must declare an immutable write mechanism (`timestamped-path`, `copy-before-rerun`, or `append-only`) to prevent destroying pre-fix evidence.
+3. **C12 Control Copy Protection (`control_copies`):** Pristine control copies carry a SHA-256 pin, `verified_before_use: true`, and a declared recreation procedure to avoid execution-time contamination.
+4. **C13 Verifiable Review Coverage (`requirements[].coverage`):** Enforces 1:1 binding between claimed review coverage and demonstrable artifact outputs.
+5. **C14 Forecast Semantics & Drift Policy:** Closed-set forecast dispositions. `CANDIDATE_READY` is strictly forbidden if any requirement is unreachable or carries unresolved start drift.
+6. **C15 Starting-Point Readback (`starting_point_readback`):** Mandatory sidecar section binding `candidate_path`, `candidate_sha256`, and live `git_state` directly to the target candidate.
+7. **Strict YAML/JSON Parser Contract:** Deterministic parsing preventing duplicate mapping keys, trailing newline regex bypasses (`\Z` anchor enforcement), and loose type coercion.
 
 ---
 
@@ -86,11 +87,12 @@ lower than forecast on either axis.
 | [`profiles/ai-maestro.md`](./profiles/ai-maestro.md) | the one node-specific file — bindings, routes, capped-capability note, vocabulary rule |
 | [`references/evidence-model.md`](./references/evidence-model.md) | `E1–E5 × R0–R2` definitions, worked cells, legacy 1–6 back-map |
 | [`references/domain-checks.md`](./references/domain-checks.md) | selective domain pre-check modules + artifact hygiene |
-| [`schemas/prework-plan.schema.json`](./schemas/prework-plan.schema.json) | JSON Schema for the plan sidecar |
-| [`scripts/validate_prework.py`](./scripts/validate_prework.py) | fail-closed validator (Python stdlib only) |
-| [`tests/`](./tests/) | validator tests + the core-first grep gate |
+| [`schemas/prework-plan.schema.json`](./schemas/prework-plan.schema.json) | JSON Schema for the plan sidecar (v1.1) |
+| [`scripts/validate_prework.py`](./scripts/validate_prework.py) | fail-closed validator with C1–C15 rule suite |
+| [`tests/`](./tests/) | 50-test test suite + attack regressions + core-first grep gate |
 | [`ASTRA_PREP_USAGE.md`](./ASTRA_PREP_USAGE.md) | per-lineage usage guide, output template, worked examples |
 | [`README_RELAY.md`](./README_RELAY.md) | relay staging provenance, revision history, promotion gate |
+| [`CANDIDATE_HASHES.json`](./CANDIDATE_HASHES.json) | 25-file SHA-256 manifest and aggregate checksum |
 
 ---
 

@@ -12,19 +12,28 @@ Copying another node's values is the failure mode.
 
 | Family / nodes | state pointer | handoff | test runner | review route (first available) |
 |---|---|---|---|---|
-| Claude Live (1C, 1X, 3H, 1A) | `0.Workspace/Node/<N>/.state.json` or `NONE_RESOLVED` | latest `<n>_*handoff*` memory file | project runner (pytest / gradle / etc.) | `redagent` MID subagent -> `bridge_redagent` -> `NOT_RUN` |
-| Codex Live (2X, 3X) | node's `.codex` / project state | node's Codex handoff | project runner | `chatgpt-redagent` (Codex Work Cloud) -> `NOT_RUN` |
+| Claude Live (1C, 3H, 1A) | `0.Workspace/Node/<N>/.state.json` or `NONE_RESOLVED` | latest `<n>_*handoff*` memory file | project runner (pytest / gradle / etc.) | `redagent` MID subagent -> `bridge_redagent` -> `NOT_RUN` |
+| Codex Live (1X, 2X, 3X) | node's `.codex` / project state | node's Codex handoff | project runner | `chatgpt-redagent` (Codex Work Cloud) -> `NOT_RUN` |
 | GLM Live (2G, 2A) | `0.Workspace/Node/<N>/` state | node's GLM handoff | project runner | `redagent` MID subagent -> `bridge_redagent` -> `NOT_RUN` |
 | Ollama (2O) | usually `NONE_RESOLVED` | node handoff or `NONE_RESOLVED` | `N/A` unless a runner is wired | `bridge_redagent` -> `NOT_RUN` |
 | Beta (4C, 4X, 4A, 4G) | `PC4_BETA_LOCAL_CANONICAL/runtime/state/` or `memory/<N>/active/*_BOOTSTRAP.md` | `temp/<N>_SESSION_HANDOFF_*` | `py -3 -m pytest tests/ -q` | same-lineage independent subagent -> `chatgpt_review_bridge` -> `NOT_RUN` (never `bridge_*`) |
 
 These are search hints, not configuration. Confirm each value against the live node.
 
+Family placement follows each node's **live authority bootstrap**, not its number:
+1X's bootstrap runs Codex on PC1, so 1X resolves the **Codex Live** row (corrected
+2026-09-19 per the 1X review; an earlier revision wrongly listed 1X under Claude Live).
+
 ## Review-route contract (per selected route)
 
 Record `route_id -> availability probe -> permitted adapter/command -> receipt/status
 contract -> fallback`. Notes:
 
+- **Transport is not independence.** A route name describes how a review is carried;
+  the `R` tier describes who vouches. A same-lineage `redagent` MID subagent is `R1`
+  by default (separate identity, shared lineage/context/stake). Filing it as `R2`
+  requires the governing model to explicitly prove no prior context and no stake --
+  without that proof it is `R1`, and the sidecar must say `R1`.
 - **Live Claude/GLM:** `redagent` MID subagent is the same-lineage tier; `bridge_redagent`
   is the permitted cross-lineage adapter; `NOT_RUN` if neither probes available.
 - **Codex Live:** Codex Work Cloud `chatgpt-redagent`; Work Cloud variants stay gated to
@@ -34,6 +43,11 @@ contract -> fallback`. Notes:
 - For an asynchronous external route, the transport observation must carry client
   correlation, actual reviewer id, server acknowledgement, exact-thread readback, bound
   final response, receipt, and status. A client-only correlation is `NOT_RUN`.
+- **An R2 plan must name evidence, not intent** (validator C6): a real `reviewer_id`,
+  a non-placeholder `route_id` and `bundle_path`, a `receipt` pointer whose sha256 is
+  the hash of the receipt artifact, and a bound `result_ref`. `NOT_RUN` / `TBD` /
+  `NONE_RESOLVED` placeholders with an R2 target fail validation -- the plan then ends
+  at `R1` and forecasts `INDEPENDENT_REVIEW_NOT_RUN`.
 
 ## Beta-node forecast is legitimately capped
 
@@ -59,7 +73,7 @@ several phrase patterns. Report disposition words to the caller as plan notes on
 ## Authoritative in-cluster pin
 
 The relay-path bundle at
-`0.AI_Maestro_Shared/Hub/skills/relay/astra_prep_20260910/` is the authoritative
+`0.AI_Maestro/Hub/skills/relay/astra_prep_20260910/` is the authoritative
 in-cluster artifact, hash-pinned by GOV-SKILL-001. The GitHub repo
 `github.com/geni2kim-ai/astra-prep` is a published mirror for external visibility only,
 not the source of record. Every node resolves and hash-checks against the relay path.

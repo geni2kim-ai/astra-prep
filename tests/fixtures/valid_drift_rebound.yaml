@@ -21,6 +21,15 @@ provenance:
     action: reconcile
     new_baseline_id: "commit:def456"
     rebound: true
+starting_point_readback:
+  candidate_path: "feature-worktree"
+  candidate_sha256: "2222222222222222222222222222222222222222222222222222222222222222"
+  points_at_candidate: true
+  git_state:
+    kind: git
+    head: "def456"
+    branch: "feature/x"
+    clean: true
 requirements:
   - id: R-001
     text: "behaviour Y verified end to end"
@@ -46,14 +55,20 @@ review:
   required: true
   independence_target: R2
   author_reviewer_distinct: true
+  reviewer_id: "reviewer-ext-1"
   route_id: "route-ext-1"
   bundle_path: "bundle/req-777"
+  receipt:
+    path: "receipts/req-777-round-1.md"
+    sha256: "5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a"
+  result_ref: "review-result-req-777-round-1"
 artifact_hygiene:
   - artifact: "integration smoke report"
     location: synced
     retention_reason: "closeout audit anchor run, kept one copy"
 forecast:
   best_reachable_cell: "E5/R2"
-  dispositions: []
+  dispositions:
+    - PROVENANCE_DRIFT_AT_START
   raise_with_caller:
     - "confirm external reviewer availability before start"

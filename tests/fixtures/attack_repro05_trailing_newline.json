@@ -1,0 +1,65 @@
+{
+ "work_unit": "REPRO-05 attack: trailing newlines on hash and id (1X review F-02)",
+ "actor": "actor-attack",
+ "generated_at": "2026-09-19T00:00:00Z",
+ "baseline_id": "commit:attack",
+ "starting_candidate": {
+  "type": "commit",
+  "ref": "attack0",
+  "sha256": "1111111111111111111111111111111111111111111111111111111111111111\n"
+ },
+ "provenance": {
+  "handoff": {
+   "path": "handoff/latest.md",
+   "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "state": {
+   "path": "state/cursor.json",
+   "sha256": "NONE_RESOLVED"
+  },
+  "tree": {
+   "worktree": "main-worktree",
+   "branch": "main"
+  },
+  "drift_at_start": false
+ },
+ "starting_point_readback": {
+  "candidate_path": "main-worktree",
+  "candidate_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+  "points_at_candidate": true,
+  "git_state": {
+   "kind": "git",
+   "head": "attack0",
+   "branch": "main",
+   "clean": true
+  }
+ },
+ "requirements": [
+  {
+   "id": "R-001\n",
+   "text": "the feature does X",
+   "implementation": "module/x.py",
+   "module": null,
+   "target": {
+    "evidence_level": "E2",
+    "review_independence": "R0"
+   },
+   "reachable": true,
+   "capability_decision": null,
+   "accept_as_open_end_state": null
+  }
+ ],
+ "review": {
+  "required": false,
+  "independence_target": "R0",
+  "author_reviewer_distinct": null,
+  "route_id": null,
+  "bundle_path": null
+ },
+ "artifact_hygiene": [],
+ "forecast": {
+  "best_reachable_cell": "E2/R0",
+  "dispositions": [],
+  "raise_with_caller": []
+ }
+}

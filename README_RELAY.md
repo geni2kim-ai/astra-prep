@@ -22,7 +22,7 @@ make them usable as an **all-node common skill**.
 | 1C review of origin | `D:/Shared/0.Workspace/Node/1C/ASTRA_SHADOW_SKILL_REVIEW_FOR_COMMON_ADOPTION_1C_20260910.md` |
 | pre-work simulation | `D:/Shared/0.Workspace/Node/1C/ASTRA_PREP_PREWORK_SIMULATION_1C_20260910.md` |
 | usage guide | `./ASTRA_PREP_USAGE.md` |
-| meeting-room session #5 minutes | `D:/Shared/0.AI_Maestro_Shared/src/dispatch_app/meeting_room/minutes/MEETING_20260910_sess5.md` |
+| meeting-room session #5 minutes | `D:/Shared/0.AI_Maestro/src/dispatch_app/meeting_room/minutes/MEETING_20260910_sess5.md` |
 | tunnel notice to Beta | `D:/Shared/0.AI_Maestro_tunnel/1C_TO_4C_4X_SESSION5_BETA_TO_LIVE_ALIGNMENT_20260910.md` |
 | current SKILL.md sha256 | `9e5d15eddb668b5f2c99a3a6df4843c35bba0a16c2aac33d02d21257e3ba2dfb` (v7) |
 
@@ -135,8 +135,29 @@ Then: `approved/astra_prep_20260910/` → Beta `skills/active_shared/astra_prep_
 | `references/evidence-model.md` | `E1–E5 × R0–R2` definitions, worked cells, legacy 1–6 back-map, closeout linkage |
 | `references/domain-checks.md` | selective domain pre-check modules + evidence/artifact hygiene |
 | `schemas/prework-plan.schema.json` | JSON Schema for the plan sidecar |
-| `scripts/validate_prework.py` | fail-closed validator (Python stdlib only; checks C1–C9) |
+| `scripts/validate_prework.py` | fail-closed validator (Python stdlib only apart from the optional PyYAML authority; checks C1–C15 in the post-1X006-remediation candidate — see the addendum below) |
 | `tests/` | validator unit tests + fixtures + the core-first grep gate |
 | `ASTRA_PREP_USAGE.md` | usage guide — per-lineage invocation, output template, worked examples, promotion gate |
-| `README.md` | GitHub landing page (mirror only) |
+| `README.md` | GitHub landing page — **mirror-only artifact, NOT present in this candidate copy** (no such file exists in the bundle; reference retained for relay history) |
 | `README_RELAY.md` | this file — provenance, revision history, relay/promotion status |
+
+---
+
+## v7.1 CANDIDATE ADDENDUM (2G draft, 2026-09-19 -- NOT relay history)
+
+This addendum is part of a **2G-authored candidate copy** at
+`D:/Shared/0.Workspace/Node/2G/drafts/astra_prep_v71_candidate_2G_20260919/`.
+It is NOT part of the pinned v7 relay bundle and adds no authority. The pinned v7
+bytes under `Hub/skills/relay/astra_prep_20260910/` are unchanged (re-proven by hash
+at closeout). Promotion of anything below follows the same gate list as above
+(1X re-review, 4G relay test, 4X loader check, 1C disposition, USER gate).
+
+| rev | actor / lineage | change summary | status |
+|---|---|---|---|
+| v7.1 candidate | 2G / GLM | (1) C10: the validator now ENFORCES the published sidecar schema structurally (required keys + additionalProperties=false at every declared level, driven by the schema file) - closes the gap where a plan violating the schema could exit 0 (found by the 2G v7.1 simulation, 2026-09-19: a plan with an undeclared top-level key exits 0 under v7, fails C10 under v7.1). (2) C11/C12/C13 + schema v1.1 optional sections: `evidence_outputs` (immutable-write mechanism per self-writing probe - the H-A rule), `control_copies` (pinned, verified-before-use, execution-restricted - the H-B rule), `requirements[].coverage` (review-coverage items with their demonstrating artifact - the H-C rule). (3) SKILL.md/domain-checks.md deltas: the three hygiene rules, an emit-text prescan pre-check, and time-scoped mutable-state claims. (4) tests: 35 collected at the 1X review (an earlier draft of this addendum said 32; 35 is the actual collected count). | candidate-only, non-final |
+| v7.1 candidate (r1, post-1X006 remediation) | 2G / GLM | Remediation of the 1X review `AI_MAESTRO_2G_PACKET_ASTRA_PREP_REVIEW_20260919_1X` (F-01..F-07 / REPRO-01..07): C14 forecast semantics (closed disposition vocabulary, CANDIDATE_READY forbidden for open rows/drift, drift must stay disclosed); C10 full schema-keyword conformance (leaf types, minLength, minItems, \Z-anchored patterns, const, oneOf, if/then; unsupported keywords fail closed); one deterministic YAML parser contract (strict PyYAML authority / corpus-equivalent fallback, duplicate keys rejected in both, parser+python versions recorded); C6 R2 review-evidence requirements (reviewer_id, receipt pointer, result_ref; placeholders rejected; same-lineage review is R1 by default; profile family table corrected - 1X is Codex on PC1); C15 required starting_point_readback (candidate hash binding + git/non-git state); evidence-hygiene added to the domain-checks Module IDs; caches quarantined to `_quarantine/`; CANDIDATE_HASHES.json rebuilt as a full bundle manifest. Tests: 50 passed (35 pre-remediation, unregressed; +15 attack/agreement tests). | candidate-only, non-final; 1X re-review required before promotion |
+
+Origin of the deltas: the 2G R46/R47 sessions (evidence overwritten in place by a
+re-run; a pristine control copy contaminated by its own test run; review coverage
+claimed but not demonstrable) plus the 2026-09-19 v7.1 simulation (before/after
+comparison report to the USER).

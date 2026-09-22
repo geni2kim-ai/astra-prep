@@ -1,0 +1,90 @@
+{
+ "manifest_version": "2 (FULL bundle manifest, post-1X006 remediation r54)",
+ "generated_at": "2026-09-19T13:23:37+09:00",
+ "bundle_root": "D:/Shared/0.Workspace/Node/2G/drafts/astra_prep_v71_candidate_2G_20260919",
+ "exclusion_rule": "Every file under the bundle root is manifested (sha256, relative POSIX path), with exactly three exclusions: (1) this manifest file itself (CANDIDATE_HASHES.json - a file cannot contain its own hash; re-hash it out-of-band after reading), (2) everything under _quarantine/ - the quarantined pytest cache and __pycache__ artifacts moved out of the live bundle during the 2026-09-19 remediation (kept for evidence, never executed; their hashes are listed in quarantined for transparency, not part of the candidate payload), and (3) REVIEW_TARGET_NOTICE.md - added 2026-09-19 R58 after the reviewed manifest generation (13:23) per the 260919-1X009 owner_action, so the reviewed aggregate 035662c4d64dc86e8f00924e01cd9f7f2949062b1f1db06605867d6f5a3c62bb stays reproducible; the notice is 2G-authored metadata, not candidate payload. No other files are excluded.",
+ "file_count": 25,
+ "files": {
+  "ASTRA_PREP_USAGE.md": "f834fb5ea2ba5ee437cc16f774604c16e13fb43e28556a301e4a2de5891c6469",
+  "CANDIDATE_README.md": "d329a1b97fdc64fb5276d500e454a0b78efae5f0d271db9e3cd5669972064fe0",
+  "profiles/ai-maestro.md": "6095a6eb7b2dc731b89f1e93349d914353abe017790152254e0bed0a2e372048",
+  "README_RELAY.md": "b4b3fea1c636bf351e126f5e43728022ea6f4d71491757574869a6551905fc07",
+  "references/domain-checks.md": "ffe92ef3d08e57390c25312bfb213d4eb90136e04d84c3c3695d03fa8fe30d70",
+  "references/evidence-model.md": "1cf55d7029052947ec8c6bb72ad3aa5f8a583bd86c0e2544f841dc987a639975",
+  "schemas/prework-plan.schema.json": "8bdd1597632547f44f06c8ac3e30399342f77e1c139bad477c61086326e3c197",
+  "scripts/validate_prework.py": "f12bd849beeed5a77e132511f8e7a48a4adab1dcc3f617c0de4a1d220490a1a7",
+  "SKILL.md": "c35b8929bc88f6cb76d695340c2ee03e660b6a78e09de42840683085bb63f29b",
+  "tests/fixtures/attack_repro05_trailing_newline.json": "385944736fe9868491be9ba353effd78ab1ddebd44ac758d8d47d14716abba79",
+  "tests/fixtures/attack_repro06_duplicate_keys.yaml": "6b95e3a859a1be79e637a057bfad52d72d146f7a93782c5c1d3255bb6cf94218",
+  "tests/fixtures/invalid_control_copy_unverified.json": "39bbc69bdfbef6295bb5879b2fa00e10476f997b80b2c06c5732fec8f0305e02",
+  "tests/fixtures/invalid_coverage_missing_demonstration.json": "fce3258d3d32a5edebeba779108e267815d9764696425d4fe46a56e2598ec9bb",
+  "tests/fixtures/invalid_drift_no_rebind.yaml": "2c37138dd885fe31340b39240ca041733f89ae23cbd4f0fb919e19174c61f76a",
+  "tests/fixtures/invalid_evidence_output_immutability.json": "9c0d89228f62f5700845174df7312343441006bed8b4f8ede5a34947abd4cccf",
+  "tests/fixtures/invalid_r2_no_separation.yaml": "831c36410c7453e8904879bb3f62da1ef047fa9289e246acbcf4bf1e17769acf",
+  "tests/fixtures/invalid_two_candidates.yaml": "240953923d1b7fc4021ad134b4401db3e55842a21c02113af3974e975074c03c",
+  "tests/fixtures/invalid_unknown_top_key.json": "d34aa1e194b40f0ec8879fc80297ab98cb2227d6d0599abfca4c4092023a9860",
+  "tests/fixtures/invalid_unreachable_no_decision.yaml": "78d61df6d66ca84c6039ccffd700e624b719af6ad4b3a3e2c084af0b34999167",
+  "tests/fixtures/valid_drift_rebound.yaml": "1128e2363fdc6a557968fff725120dbf6a218d6e5622bbe9fc006272f764c291",
+  "tests/fixtures/valid_flow_style.yaml": "39a123a89049d043ac4badcd146c7a7ec4bad55d7a727f2d1bfa9147c19c943e",
+  "tests/fixtures/valid_minimal.yaml": "5e22f15c5bcf146e05215251576220673e3b9055d57036df9ed4c0f6233c5cf4",
+  "tests/fixtures/valid_v71_full.json": "a7f96726b268539cf8883d91234b6f8e1226327b2b1c0175e60e95a450a0ab5d",
+  "tests/test_attack_regressions.py": "33b60de34340aa79979104ec1922c03a6746f5f62eb4b9d9d550ade0f7b18a6b",
+  "tests/test_validate_prework.py": "3beabb495516ad1916dfb0fffdea0416025f0883c693b527d3fffba6a041bf32"
+ },
+ "quarantined": {
+  "count": 7,
+  "reason": "moved (not deleted) from the live bundle on 2026-09-19: .pytest_cache/ and __pycache__/ build artifacts",
+  "files": {
+   "_quarantine/.pytest_cache/.gitignore": "e7c6bb30148cf667606dcd63e7ca77acaa3cfb0c8303bf09e6419e1e1669dc6d",
+   "_quarantine/.pytest_cache/CACHEDIR.TAG": "37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4",
+   "_quarantine/.pytest_cache/README.md": "420e808d79a6c25d3cda0af33bc4782314a14949866682c68ce8149e89b66b70",
+   "_quarantine/.pytest_cache/v/cache/lastfailed": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+   "_quarantine/.pytest_cache/v/cache/nodeids": "34629c2325cf9d63f0b0f2ea0289ce4e9c7b4e1d3f8c6a5c36dd9a47efa55f04",
+   "_quarantine/scripts/__pycache__/validate_prework.cpython-311.pyc": "08843dea73d3daba8a17d635239ad64c43eda30ceb41989ec5e9d03dbc0fa2de",
+   "_quarantine/tests/__pycache__/test_validate_prework.cpython-311-pytest-9.0.3.pyc": "ba4005c05fd67bfc4dc37c5b2214f0bbc1ab5bdf7a582bc4626f0ddb81b35a01"
+  }
+ },
+ "bundle_aggregate_sha256": "0818dc9d17856042d380116baac9d7603097269651b5ab5759bfc9bb7efe476d",
+ "aggregate_rule": "sha256 over the UTF-8 byte stream of sorted \"<relative-path>  <sha256>\n\" lines of files{} (two spaces separator, LF endings)",
+ "pinned_v7_reverified": {
+  "root": "D:/Shared/0.AI_Maestro/Hub/skills/relay/astra_prep_20260910",
+  "verified_at": "2026-09-19T13:23:37+09:00",
+  "declared_hashes_from_pre_remediation_manifest": {
+   "SKILL.md": "9e5d15eddb668b5f2c99a3a6df4843c35bba0a16c2aac33d02d21257e3ba2dfb",
+   "ASTRA_PREP_USAGE.md": "1b001ac4f526175f54f439bbf5821a62ae471e0e57885a5a586c359093baefc3",
+   "README_RELAY.md": "91087e70de7181d6c377b47a3eda3f7c9b0b4374998f4543431d10e32ffa2d9b",
+   "profiles/ai-maestro.md": "f248beeb06e5266648656931dbd6dc552aee5ae429b12735a63beb57f3087f8b",
+   "references/evidence-model.md": "f584c02b27312df7aa91b2a82d2dc1baa52668df6bb0911bdab5afc8d0caf6a4",
+   "references/domain-checks.md": "faa9894dc07a136b2a9794f52f440795ea2d8c1cd6928af9d88382fe44bdbe7c",
+   "schemas/prework-plan.schema.json": "b6d793c1596676d19fa2a91519a26bf6586a86edeb2181185a9b85fca813eb6a",
+   "scripts/validate_prework.py": "a4f07f2da6a7426a2067070b531494a7b62d993c8abe188a2c2ca18b33f481a0",
+   "tests/test_validate_prework.py": "d0978a9547ed0320b75d13a27af6967e9e5ada68992934cc5b1bf974c110126d"
+  },
+  "current_hashes": {
+   "ASTRA_PREP_USAGE.md": "1b001ac4f526175f54f439bbf5821a62ae471e0e57885a5a586c359093baefc3",
+   "README_RELAY.md": "91087e70de7181d6c377b47a3eda3f7c9b0b4374998f4543431d10e32ffa2d9b",
+   "SKILL.md": "9e5d15eddb668b5f2c99a3a6df4843c35bba0a16c2aac33d02d21257e3ba2dfb",
+   "profiles/ai-maestro.md": "f248beeb06e5266648656931dbd6dc552aee5ae429b12735a63beb57f3087f8b",
+   "references/domain-checks.md": "faa9894dc07a136b2a9794f52f440795ea2d8c1cd6928af9d88382fe44bdbe7c",
+   "references/evidence-model.md": "f584c02b27312df7aa91b2a82d2dc1baa52668df6bb0911bdab5afc8d0caf6a4",
+   "schemas/prework-plan.schema.json": "b6d793c1596676d19fa2a91519a26bf6586a86edeb2181185a9b85fca813eb6a",
+   "scripts/validate_prework.py": "a4f07f2da6a7426a2067070b531494a7b62d993c8abe188a2c2ca18b33f481a0",
+   "tests/test_validate_prework.py": "d0978a9547ed0320b75d13a27af6967e9e5ada68992934cc5b1bf974c110126d"
+  },
+  "all_match": true,
+  "per_file_match": {
+   "SKILL.md": true,
+   "ASTRA_PREP_USAGE.md": true,
+   "README_RELAY.md": true,
+   "profiles/ai-maestro.md": true,
+   "references/evidence-model.md": true,
+   "references/domain-checks.md": true,
+   "schemas/prework-plan.schema.json": true,
+   "scripts/validate_prework.py": true,
+   "tests/test_validate_prework.py": true
+  },
+  "note": "verified read-only; the pinned v7 tree was never written to during the remediation"
+ },
+ "post_review_note": "2026-09-19 R58 (redagent Tier-1 F3): exclusion_rule text updated from two to three exclusions after REVIEW_TARGET_NOTICE.md was added per the 1X009 owner_action; files{} and bundle_aggregate_sha256 untouched - the aggregate recomputes to the reviewed value (verified before and after this edit).",
+ "reconciliation_20260922_1C": "1C independently re-verified this canonical landing before the GOV-SKILL-001 v7.1 pin decision and found the aggregate no longer reproduced: README_RELAY.md and profiles/ai-maestro.md had each changed by exactly one line (a `0.AI_Maestro_Shared` path corrected to `0.AI_Maestro`), matching the GOV-MIG-001 single-root-writer path-correction sweep 1X performed and 1C already confirmed/ratified as the current operating overlay in 260920-1C014 -- the edit itself is correct and disclosed work, but it silently broke this bundle's own reviewed-aggregate invariant (the exact hazard V71_HEADER_NOTICE.md's in-place-edit avoidance was designed to prevent, from a work unit that did not know this bundle carried that constraint). Old README_RELAY.md hash 0a6c66d93c9e03c66fdd3b561c733f30f660f81074aed4a71d199945b4e94bd5 -> new b4b3fea1c636bf351e126f5e43728022ea6f4d71491757574869a6551905fc07; old profiles/ai-maestro.md hash 0a2d81c04466d1850e65bcfeb11b45df0d15338a83ca69c8309ed58c9eb4d68d -> new 6095a6eb7b2dc731b89f1e93349d914353abe017790152254e0bed0a2e372048; old bundle_aggregate_sha256 035662c4d64dc86e8f00924e01cd9f7f2949062b1f1db06605867d6f5a3c62bb -> new 0818dc9d17856042d380116baac9d7603097269651b5ab5759bfc9bb7efe476d. No other file among the 25 payload entries differs from the reviewed manifest (independently re-hashed all 25 against the live canonical tree; SKILL.md, scripts/validate_prework.py, schemas/prework-plan.schema.json, and every tests/ file remain byte-identical to their originally reviewed hashes -- only the two path-reference documentation files changed). This is the aggregate 1C uses as the basis for the v7.1 pin; the 035662c4... value is retained above as the original R54/R58-reviewed historical value, not deleted."
+}

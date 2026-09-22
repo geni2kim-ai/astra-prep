@@ -144,7 +144,15 @@ Load only the modules the request actually touches, from `references/domain-chec
 `date-time`, `realtime`, `ui`, `handoff`, `packet-governance`, `db-migration`,
 `source-lineage`, plus **evidence & artifact hygiene** (where each artifact is written,
 one authoritative run, no build output or repo metadata in a shared tree, one draft of a
-consolidating doc). Each selected module adds requirement rows now so the edge case is
+consolidating doc).
+
+v7.1 hardens this module with three rules: **immutable evidence outputs** (a
+script that writes its own evidence writes to a path never overwritten within the
+unit), **control-copy lifecycle** (a pristine copy is pinned, verified before use,
+and not executed against after verification), and **coverage accounting** (review-type
+requirements enumerate what is reviewed and the artifact that demonstrates each item
+was reached; a coverage item whose demonstration cannot be produced is declared
+accept-as-open here, not at closeout). Each selected module adds requirement rows now so the edge case is
 planned, not discovered late. If an ecosystem supplies an external module, record its
 source, version, and hash.
 
@@ -198,7 +206,10 @@ Two artifacts:
    4. domain pre-check rows added (incl. `source-lineage` reconciliation if a frozen
       baseline applies)
    5. evidence & artifact hygiene: where each artifact is written (host-local / shared),
-      the one authoritative run, the shared-footprint budget
+      the one authoritative run, the shared-footprint budget,
+      each self-written evidence output with its immutability mechanism (timestamped
+      path / copy-before-rerun / append-only), any pristine control copy with its pin
+      and execution policy, and the coverage items for review-type requirements
    6. capability gaps + the acquire / rescope / accept-as-open decision for each
    7. independent-review plan (required? `R2` per the bar above? route? bundle started?)
    8. closeout-readiness forecast + anything to raise with the caller now
@@ -246,3 +257,14 @@ Korean triggers or silently use a partial skill.
 | Independent-review bundle incomplete / scrambled at the end | transport retries, hash mismatches | bundle assembled alongside the work |
 | Completion report negotiates scope after the fact | caller surprised at "done, but..." | scope items raised before work starts |
 | Evidence tree grows unbounded in a shared folder | found in a cleanup weeks later | artifact locations + one-run rule + shared budget planned at hour 0 |
+
+## Version history (core)
+
+- v7.1 (candidate draft): evidence-immutability, control-copy-lifecycle, and
+  coverage-accounting hardening. Sidecar schema v1.1 adds optional `evidence_outputs`,
+  `control_copies`, and `requirements[].coverage`; validator C10 now enforces the
+  published schema structurally (required keys and `additionalProperties: false` at
+  every declared level fail closed), and C11-C13 check the new sections. The v7
+  validator ran only its own hand-rolled checks, so a plan violating the published
+  schema could exit 0 - that gap is closed. Full delta and authorship: see the relay
+  README revision table and the usage-guide addendum.

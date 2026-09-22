@@ -6,8 +6,10 @@ checklist sections, not a runtime plugin loader. If an ecosystem supplies an ext
 module, record its source, version, and hash.
 
 Module IDs: `date-time`, `realtime`, `ui`, `handoff`, `packet-governance`,
-`db-migration`, `source-lineage`. Plus **evidence & artifact hygiene**, which applies to
-almost every unit.
+`db-migration`, `source-lineage`, `evidence-hygiene`. The `evidence-hygiene` module
+(evidence & artifact hygiene, below) applies to almost every unit. This list is the
+authoritative module vocabulary and must stay identical to the `module` enum in
+`schemas/prework-plan.schema.json` (the test suite asserts the agreement).
 
 ---
 
@@ -50,6 +52,15 @@ entering the emit path carries no preview-only state, no "no packet emitted" /
 draft-identity marker, and no body-vs-envelope contradiction -- historical-correction
 wording lives under an explicit historical namespace only.
 
+v7.1 adds two pre-checks. **Emit-text prescan:** if the ecosystem provides
+emit-time linters, the planned packet body is scanned with them at plan time and
+known-vocabulary collisions are substituted before the first emit attempt - a failed
+emit discovered by the linter at closeout is wasted work the plan already paid for.
+**Time-scoped mutable-state claims:** any claim whose evidence is mutable state (a
+queue sweep, a running counter, a service check) records its as-of timestamp at
+capture time and is re-checked immediately before the review dispatch; an unmarked
+snapshot of moving state is a reproducibility debt.
+
 ## `db-migration` -- DB / migration
 
 Forward + rollback path; idempotency; row-count expectation before and after;
@@ -66,7 +77,7 @@ consolidating record is issued.
 
 ---
 
-## Evidence & artifact hygiene
+## `evidence-hygiene` -- evidence & artifact hygiene
 
 Plan now where each artifact the work will produce is written and how large it gets.
 
@@ -80,6 +91,22 @@ Plan now where each artifact the work will produce is written and how large it g
   source tars, and any repo-metadata directory left inside an evidence folder.
 - **Draft discipline:** one working version of a consolidating doc or matrix, superseded
   in place -- not N disagreeing draft files.
+- **Immutable evidence outputs (v7.1):** a script or probe that writes its own
+  evidence artifact writes to a path that is never overwritten within the unit -- a
+  timestamped filename, a copy-before-rerun, or an append-only log. An in-place
+  output path is a finding at hour 0: the second run destroys the first run's
+  evidence by construction, and regenerating "before" evidence after the fact is a
+  restoration exercise, not a measurement.
+- **Control-copy lifecycle (v7.1):** a pristine/baseline control copy is pinned at
+  creation, verified before use, and not executed against after its verification --
+  or it is recreated and re-verified. A copy whose byte-purity a later check depends
+  on must never be the place where tests run; generated caches and run artifacts
+  contaminate exactly the property the copy exists to prove.
+- **Coverage accounting (v7.1):** review-type requirements enumerate coverage items
+  -- each artifact or claim to be reviewed, and the artifact that will demonstrate
+  the review reached it. A coverage item whose demonstration cannot be produced is
+  declared accept-as-open at plan time; at closeout, planned coverage is compared
+  against demonstrated coverage and a silently dropped item is a finding.
 
 Forecast row: `EVIDENCE_TREE_BLOAT_RISK` if the plan cannot keep the shared footprint
 bounded.

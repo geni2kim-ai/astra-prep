@@ -1,0 +1,39 @@
+{
+ "schema": "astra_prep_v71_promotion_record_v2_canonical_landing",
+ "work_unit": "20260919-2G-CLIENT-R61-DELEGATION-TRANCHE1",
+ "performed_at": "2026-09-19T21:30:26+09:00",
+ "actor": "2G",
+ "action": "canonical relay landing of the v7.1 bundle, answering the 260919-1C006 revised ask",
+ "authorization": "chain: 260919-1C036 NoObjection + 260919-1X009 R54 re-review (50/50 tests, 25/25 manifest, pinned v7 9/9, owner_route=1C_USER) + USER direct approval 2026-09-19 ~19:5x KST recorded in R60 + 260919-1C006 revised ask directing 2G to land the candidate at the canonical relay path if the drafts-only state was an unfinished promotion step (classified as such: the R60 staging destination 0.AI_Maestro_Shared is host-local-only per GOV-MIG-001 and invisible to 1C's host)",
+ "source_bundle": "D:/Shared/0.Workspace/Node/2G/drafts/astra_prep_v71_candidate_2G_20260919 (the 1X009-designated R54 review target; REVIEW_TARGET_NOTICE.md preserved there)",
+ "source_manifest": "CANDIDATE_HASHES.json (excluded from its own payload per manifest exclusion rule 1)",
+ "prior_staging": {
+  "destination": "D:/Shared/0.AI_Maestro_Shared/Hub/skills/relay/astra_prep_v71_20260919",
+  "performed_at": "2026-09-19T20:01:32+09:00 (R60)",
+  "record": "PROMOTION_RECORD.json in that directory",
+  "disposition": "left in place untouched as host-local staging history; the canonical landing in this record supersedes it as the 1C-visible promotion location"
+ },
+ "destination": "D:/Shared/0.AI_Maestro/Hub/skills/relay/astra_prep_v71_20260919",
+ "files_promoted": 25,
+ "all_file_hashes_match": true,
+ "aggregate_declared": "035662c4d64dc86e8f00924e01cd9f7f2949062b1f1db06605867d6f5a3c62bb",
+ "aggregate_at_destination": "035662c4d64dc86e8f00924e01cd9f7f2949062b1f1db06605867d6f5a3c62bb",
+ "aggregate_invariant": true,
+ "destination_walk_extra_files": [],
+ "excluded_from_payload": [
+  "_quarantine/ (remediation evidence, per manifest exclusion 2; stays in the drafts bundle only)",
+  "REVIEW_TARGET_NOTICE.md (bundle metadata, per manifest exclusion 3; stays in the drafts bundle only)",
+  "CANDIDATE_HASHES.json (the manifest excludes itself; its sha256 re-hashed out-of-band after reading)"
+ ],
+ "pinned_v7": {
+  "path": "D:/Shared/0.AI_Maestro/Hub/skills/relay/astra_prep_20260910",
+  "status": "UNTOUCHED by this landing (rollback anchor); 9/9 declared file hashes re-verified at this canonical path immediately after the copy",
+  "pin_sha_prefix": "9e5d15ed (SKILL.md, matches the GOV-SKILL-001 v7 pin)"
+ },
+ "rollback": "removing the canonical astra_prep_v71_20260919/ directory is the 1C/USER rollback action; v7 remains the pinned pilot until the 1C pin notice lands",
+ "finality": "non_final",
+ "note": "the bundle is landed at the canonical relay per 1C006; the formal GOV-SKILL-001 v7.1 pin update stays 1C's notice action (re-requested by packet, not claimed as issued by 2G)",
+ "post_review_correction_2": "2026-09-19 R61 (redagent Tier-1 F4): performed_at originally said 2026-09-19T21:4x KST (an imprecise hand-rounded value); corrected to the exact record mtime 2026-09-19T21:30:26+09:00. The record sits outside the 25-file payload aggregate, so the aggregate 035662c4d64dc86e8f00924e01cd9f7f2949062b1f1db06605867d6f5a3c62bb is unaffected; pre-correction record sha256 89743f790eac6c7a79b8a08a51a85b4422a4b4cf5c7f344e93e2eba7e8f76cf4.",
+ "r62_addendum": "2026-09-20 R62 per 260920-1C008: CANDIDATE_HASHES.json landed verbatim at this canonical path (sha 7e43913b1d163d89b6b1f6c1faee70ba10a7243132a3237c1856bd7a5ffc0662, byte-identical to the drafts review-target manifest) so a reader here can recompute the aggregate; V71_HEADER_NOTICE.md added marking ASTRA_PREP_USAGE.md and README_RELAY.md as historical v7 text with the v7.1 SKILL.md pointer, chosen over in-place edits to preserve the reviewed 25-file aggregate (in-place edit remains available to 1C/USER); the two marked files re-verified byte-identical to their reviewed manifest hashes after the landing.",
+ "reconciliation_20260922_1C": "Before ruling on a GOV-SKILL-001 v7.1 pin (USER-directed review, 2026-09-22), 1C independently re-hashed all 25 payload files at this canonical path and found the aggregate no longer reproduced: a later, separate, already-ratified work unit (1X's GOV-MIG-001 single-root-writer path-correction sweep, confirmed as the current operating overlay in 260920-1C014) had corrected one `0.AI_Maestro_Shared` -> `0.AI_Maestro` reference each in README_RELAY.md and profiles/ai-maestro.md, without knowing this bundle's two files were pinned by V71_HEADER_NOTICE.md's own reviewed-aggregate invariant. The edits are correct and already-disclosed; only the invariant bookkeeping was stale. CANDIDATE_HASHES.json's `files` entries for both, and its `bundle_aggregate_sha256`, were updated to the new correct values (full before/after hashes recorded in CANDIDATE_HASHES.json's own `reconciliation_20260922_1C` field) and V71_HEADER_NOTICE.md's README_RELAY.md citation was updated to match; all 25 files independently re-verified byte-identical to the corrected manifest immediately after. Aggregate 035662c4d64dc86e8f00924e01cd9f7f2949062b1f1db06605867d6f5a3c62bb (2G's original R54/R58 review target) is now historical; 0818dc9d17856042d380116baac9d7603097269651b5ab5759bfc9bb7efe476d is the current, live-tree-verified value and the one any GOV-SKILL-001 v7.1 pin should cite."
+}

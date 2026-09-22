@@ -1,4 +1,8 @@
-"""Tests for scripts/validate_prework.py and the core-first constraint on SKILL.md."""
+"""Tests for scripts/validate_prework.py and the core-first constraint on SKILL.md.
+
+v7.1 additions: C10 structural schema conformance (the S-0 regression - a plan with
+an undeclared key used to exit 0), and C11-C13 for the optional v1.1 sections
+(evidence_outputs, control_copies, requirements[].coverage)."""
 
 from __future__ import annotations
 
@@ -29,7 +33,10 @@ def run_validator(fixture: str) -> subprocess.CompletedProcess:
 # --------------------------------------------------------------------------- #
 @pytest.mark.parametrize(
     "fixture",
-    ["valid_minimal.yaml", "valid_drift_rebound.yaml", "valid_flow_style.yaml"],
+    [
+     "valid_minimal.yaml", "valid_drift_rebound.yaml", "valid_flow_style.yaml",
+     "valid_v71_full.json",
+    ],
 )
 def test_valid_fixtures_pass(fixture):
     result = run_validator(fixture)
@@ -47,6 +54,10 @@ def test_valid_fixtures_pass(fixture):
         ("invalid_drift_no_rebind.yaml", "C5"),
         ("invalid_r2_no_separation.yaml", "C6"),
         ("invalid_unreachable_no_decision.yaml", "C4"),
+        ("invalid_unknown_top_key.json", "C10"),
+        ("invalid_evidence_output_immutability.json", "C11"),
+        ("invalid_control_copy_unverified.json", "C12"),
+        ("invalid_coverage_missing_demonstration.json", "C13"),
     ],
 )
 def test_invalid_fixtures_fail(fixture, check_id):
@@ -171,3 +182,73 @@ def test_minimal_parser_path_still_validates(monkeypatch):
     monkeypatch.setattr("builtins.__import__", blocked_import)
     plan = mod.load_plan(FIXTURES / "valid_drift_rebound.yaml")
     assert mod.validate(plan) == []
+
+
+# --------------------------------------------------------------------------- #
+# v7.1: C10 schema conformance and the new optional sections
+# --------------------------------------------------------------------------- #
+def _plan_copy():
+    import json as _json
+    return _json.loads((FIXTURES / "valid_v71_full.json").read_text(encoding="utf-8"))
+
+
+def test_c10_rejects_undeclared_top_level_key():
+    """The S-0 regression: this plan exited 0 under the v7 validator."""
+    mod = _load_validator_module()
+    plan = _plan_copy()
+    plan["bogus_extra_field"] = {"attack": "silent schema violation"}
+    fails = mod.validate(plan, mod.load_schema())
+    assert any(f.startswith("FAIL: C10") and "bogus_extra_field" in f for f in fails), fails
+
+
+def test_c10_rejects_undeclared_key_inside_requirement():
+    mod = _load_validator_module()
+    plan = _plan_copy()
+    plan["requirements"][0]["smuggled"] = True
+    fails = mod.validate(plan, mod.load_schema())
+    assert any(f.startswith("FAIL: C10") and "smuggled" in f for f in fails), fails
+
+
+def test_c10_accepts_v71_sections():
+    mod = _load_validator_module()
+    assert mod.validate(_plan_copy(), mod.load_schema()) == [], "valid_v71_full.json must be clean"
+
+
+def test_c12_requires_recreation_procedure_when_execution_allowed():
+    mod = _load_validator_module()
+    plan = _plan_copy()
+    plan["control_copies"][0]["execution_allowed_after_verification"] = True
+    fails = mod.validate(plan, mod.load_schema())
+    assert any(f.startswith("FAIL: C12") and "recreation_procedure" in f for f in fails), fails
+
+
+def test_validator_without_schema_argument_loads_it_itself():
+    mod = _load_validator_module()
+    assert mod.validate(_plan_copy()) == [], "validate(plan) must self-load the schema"
+
+
+def test_c10_resolves_local_ref_pointer_sha():
+    """F3: provenance.handoff is a $defs/pointer - a missing sha256 must fail."""
+    mod = _load_validator_module()
+    plan = _plan_copy()
+    del plan["provenance"]["handoff"]["sha256"]
+    fails = mod.validate(plan, mod.load_schema())
+    assert any(f.startswith("FAIL: C10") and "provenance.handoff" in f for f in fails), fails
+
+
+def test_c10_enforces_enum_membership():
+    """F4: enum values are enforced, not just key presence."""
+    mod = _load_validator_module()
+    plan = _plan_copy()
+    plan["requirements"][0]["capability_decision"] = "bogus"
+    fails = mod.validate(plan, mod.load_schema())
+    assert any(f.startswith("FAIL: C10") and "capability_decision" in f for f in fails), fails
+
+
+def test_validate_self_loads_schema_and_enforces_c10():
+    """F5: validate(plan) without an explicit schema still enforces C10."""
+    mod = _load_validator_module()
+    plan = _plan_copy()
+    plan["bogus_extra_field"] = True
+    fails = mod.validate(plan)
+    assert any(f.startswith("FAIL: C10") and "bogus_extra_field" in f for f in fails), fails

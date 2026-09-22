@@ -2,7 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/geni2kim-ai/astra-prep/schemas/prework-plan.schema.json",
   "title": "astra-prep pre-work plan sidecar",
-  "description": "Machine-readable companion to the prose pre-work plan. Validated by scripts/validate_prework.py (which also enforces cross-field rules this schema cannot express).",
+  "description": "Machine-readable companion to the prose pre-work plan. Validated by scripts/validate_prework.py, which since the 2026-09-19 post-1X006 remediation enforces THIS schema's declared keyword subset (C10: required keys, additionalProperties=false, local $refs, enum, leaf types incl. union types, minLength, minItems, fully-anchored patterns, const, oneOf, if/then; any keyword outside the enforced subset fails closed) plus cross-field rules the schema cannot express (C1-C9, C11-C15). v1.1 adds optional evidence_outputs, control_copies, and requirements[].coverage. Remediation additions: the closed forecast disposition vocabulary, R2 review-evidence fields (reviewer_id, receipt, result_ref), and the required starting_point_readback block.",
+  "$comment": "v1.2 (v7.1 candidate bundle, post-1X006 remediation): forecast disposition enum, R2 review-evidence fields, starting_point_readback, \\Z-anchored hash/ID patterns so trailing newlines are rejected.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -12,6 +13,7 @@
     "baseline_id",
     "starting_candidate",
     "provenance",
+    "starting_point_readback",
     "requirements",
     "review",
     "forecast"
@@ -28,7 +30,41 @@
       "properties": {
         "type": { "enum": ["commit", "tree", "rev", "doc"] },
         "ref": { "type": "string", "minLength": 1 },
-        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}\\Z" }
+      }
+    },
+    "starting_point_readback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_path", "candidate_sha256", "points_at_candidate", "git_state"],
+      "properties": {
+        "candidate_path": { "type": "string", "minLength": 1 },
+        "candidate_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}\\Z" },
+        "points_at_candidate": { "const": true },
+        "git_state": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "head", "clean"],
+              "properties": {
+                "kind": { "const": "git" },
+                "head": { "type": "string", "minLength": 1 },
+                "branch": { "type": ["string", "null"] },
+                "clean": { "type": "boolean" }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "declaration"],
+              "properties": {
+                "kind": { "const": "non-git" },
+                "declaration": { "type": "string", "minLength": 1 }
+              }
+            }
+          ]
+        }
       }
     },
     "provenance": {
@@ -70,7 +106,7 @@
         "additionalProperties": false,
         "required": ["id", "text", "implementation", "target", "reachable"],
         "properties": {
-          "id": { "type": "string", "pattern": "^R-[0-9]+$" },
+          "id": { "type": "string", "pattern": "^R-[0-9]+\\Z" },
           "text": { "type": "string", "minLength": 1 },
           "implementation": { "type": "string", "minLength": 1 },
           "module": {
@@ -94,7 +130,20 @@
             "type": ["string", "null"],
             "enum": ["acquire", "rescope", "accept-as-open", null]
           },
-          "accept_as_open_end_state": { "type": ["string", "null"] }
+          "accept_as_open_end_state": { "type": ["string", "null"] },
+          "coverage": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["item", "demonstration", "target"],
+              "properties": {
+                "item": { "type": "string", "minLength": 1 },
+                "demonstration": { "type": "string", "minLength": 1 },
+                "target": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
         },
         "if": { "properties": { "reachable": { "const": false } } },
         "then": {
@@ -113,8 +162,22 @@
         "required": { "type": "boolean" },
         "independence_target": { "enum": ["R0", "R1", "R2"] },
         "author_reviewer_distinct": { "type": ["boolean", "null"] },
-        "route_id": { "type": ["string", "null"] },
-        "bundle_path": { "type": ["string", "null"] }
+        "reviewer_id": { "type": ["string", "null"], "minLength": 1 },
+        "route_id": { "type": ["string", "null"], "minLength": 1 },
+        "bundle_path": { "type": ["string", "null"], "minLength": 1 },
+        "receipt": { "$ref": "#/$defs/pointer" },
+        "result_ref": { "type": ["string", "null"], "minLength": 1 }
+      },
+      "if": { "properties": { "independence_target": { "const": "R2" } } },
+      "then": {
+        "required": [
+          "author_reviewer_distinct",
+          "reviewer_id",
+          "route_id",
+          "bundle_path",
+          "receipt",
+          "result_ref"
+        ]
       }
     },
     "artifact_hygiene": {
@@ -140,9 +203,57 @@
       "additionalProperties": false,
       "required": ["best_reachable_cell", "dispositions", "raise_with_caller"],
       "properties": {
-        "best_reachable_cell": { "type": "string", "pattern": "^E[1-5]/R[0-2]$" },
-        "dispositions": { "type": "array", "items": { "type": "string" } },
+        "best_reachable_cell": { "type": "string", "pattern": "^E[1-5]/R[0-2]\\Z" },
+        "dispositions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "CANDIDATE_READY",
+              "RUNTIME_NOT_RUN",
+              "PROVENANCE_DRIFT_AT_START",
+              "INDEPENDENT_REVIEW_NOT_RUN",
+              "TRANSPORT_UNVERIFIED",
+              "CAPABILITY_GAP",
+              "SCOPE_RENEGOTIATION_NEEDED",
+              "EVIDENCE_TREE_BLOAT_RISK"
+            ]
+          }
+        },
         "raise_with_caller": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "evidence_outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact", "writer", "immutability"],
+        "properties": {
+          "artifact": { "type": "string", "minLength": 1 },
+          "writer": { "type": "string", "minLength": 1 },
+          "immutability": {
+            "enum": ["timestamped-path", "copy-before-rerun", "append-only"]
+          },
+          "run": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "control_copies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "pin_sha256", "verified_before_use", "execution_allowed_after_verification"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "pin_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}\\Z" },
+          "verified_before_use": { "type": "boolean" },
+          "execution_allowed_after_verification": { "type": "boolean" },
+          "recreation_procedure": { "type": ["string", "null"] }
+        },
+        "if": { "properties": { "verified_before_use": { "const": false } } },
+        "then": { "$comment": "rejected by validator check C12" }
       }
     }
   },
@@ -155,7 +266,7 @@
         "path": { "type": "string", "minLength": 1 },
         "sha256": {
           "oneOf": [
-            { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            { "type": "string", "pattern": "^[0-9a-f]{64}\\Z" },
             { "const": "NONE_RESOLVED" }
           ]
         }

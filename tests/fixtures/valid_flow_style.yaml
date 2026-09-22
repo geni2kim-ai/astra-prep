@@ -8,6 +8,7 @@ provenance:
   state: {path: "state/cursor.json", sha256: "NONE_RESOLVED"}
   tree: {worktree: "main-worktree", branch: "main"}
   drift_at_start: false
+starting_point_readback: {candidate_path: "main-worktree", candidate_sha256: "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", points_at_candidate: true, git_state: {kind: git, head: "fff666", branch: "main", clean: true}}
 requirements:
   - id: R-001
     text: "feature does X"

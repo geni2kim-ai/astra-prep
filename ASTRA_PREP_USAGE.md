@@ -279,3 +279,48 @@ relay/astra_prep_20260910/   (현재, v7 디렉터리 번들)
 - 독립검토 번들을 마무리에 몰아서 조립 -> transport 혼동. 작업과 동시에.
 - Beta에서 `E3~E5` 미도달을 "실패"로 취급 -> `live_effect=DENIED` 하의 정상. accept-as-open.
 - 증거를 synced 트리에 무제한 축적(중복 run, 빌드 산출물, repo 메타데이터) -> 착수 전에 위치·예산 계획. 검증기 C7.
+
+---
+
+## v7.1 addendum (2G candidate copy, 2026-09-19)
+
+적용 위치: `D:/Shared/0.Workspace/Node/2G/drafts/astra_prep_v71_candidate_2G_20260919/`
+(2G 초안 후보 - 핀이 잠긴 v7 relay 번들과 무관, 승격은 1C 소유).
+
+- 검증기 검사 추가: **C10** (스키마 구조 강제 - required/additionalProperties 위반 fail-closed),
+  **C11** evidence_outputs 각 항목은 불변 기록 메커니즘(timestamped-path / copy-before-rerun /
+  append-only) 명시, **C12** control_copies는 pin+사전검증 필수(검증 후 실행 허용 시
+  recreation_procedure 명시), **C13** requirements[].coverage 각 항목은 item/demonstration/target.
+- 스키마 v1.1: 위 세 옵션 섹션 추가, additionalProperties=false 유지.
+- exit 코드 변화 없음 (0/1/2).
+
+S-0 증명 (동일 픽스처, 2026-09-19 실측): 선언되지 않은 최상위 키를 가진 계획이
+v7 검증기에서는 exit 0, v7.1에서는 exit 1 (C10).
+
+### v7.1 r1 addendum (2G candidate copy, 2026-09-19 -- post-1X006 remediation)
+
+1X 리뷰(REPRO-01..07 / F-01..F-07) 조치분. 승격은 여전히 1C/1X 소유.
+
+- **C14** forecast 의미론: disposition 어휘는 폐쇄 집합(스키마 enum; 미지 값 거부).
+  `CANDIDATE_READY`는 단독이어야 하고, reachable=false·accept-as-open 행·
+  `drift_at_start=true` 중 하나라도 있으면 금지. 드리프트 정책 명시: 재조정된 시작
+  드리프트는 공시 disposition으로 남음 -- `drift_at_start=true`면 구체적 reconciliation과
+  함께 `forecast.dispositions`에 `PROVENANCE_DRIFT_AT_START` 필수(빈 목록 불인정).
+  accept-as-open 행은 `accept_as_open_end_state`에 정직한 종료 셀(`E[1-5]/R[0-2]`) 명시(C4).
+- **C10** 전면 확장: 리프 타입(유니온 포함), minLength, minItems, pattern(`^...\\Z` 완전
+  앵커 -- 개행 접미 거부), const, oneOf, if/then 강제. 미지원 스키마 키워드는 fail-closed.
+- **파서 계약 단일화**: PyYAML 있으면 strict 계약으로 단일 권위(중복 키 거부, 타임스탬프는
+  문자열 유지), 없으면 동일 계약의 폴백 파서. JSON 중복 키도 거부. 실행 시 parser/python
+  버전을 출력. 음성 코퍼스는 양쪽 모드에서 모두 실패 확인(테스트).
+- **C6** R2 검토 독립성 증명 강화: `reviewer_id`, 무플레이스홀더 `route_id`/`bundle_path`,
+  64-hex 해시의 `receipt` 포인터, 바운드 `result_ref` 필수(TBD/NOT_RUN 등은 거부).
+  동일 계열 검토는 기본 R1. 프로필 패밀리 표 수정: **1X는 PC1의 Codex 부트스트랩**
+  (이전 표의 Claude Live 분류 오기).
+- **C15** `starting_point_readback` 필수 섹션: candidate_path + candidate_sha256(=
+  starting_candidate.sha256, doc 후보는 ref와 경로 일치), `points_at_candidate=true`,
+  git_state(git: HEAD/branch/clean | non-git: 명시 선언).
+- **F-07**: `evidence-hygiene`을 domain-checks.md Module IDs에 추가 + 스키마-문서 어휘
+  일치 테스트.
+- **번들 정화 (F-06)**: `.pytest_cache/`, `__pycache__/`는 `_quarantine/`으로 이동(삭제
+  없음), CANDIDATE_HASHES.json은 전체 파일 매니페스트로 재작성(배제 규칙 명시 + 번들
+  aggregate 해시). 테스트: 50 passed (조치 전 35, 회귀 없음 + 공격/일치 테스트 15 추가).
