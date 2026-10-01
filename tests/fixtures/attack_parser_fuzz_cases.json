@@ -1,0 +1,49 @@
+{
+  "policy": "The offline verification gate (component) rejects duplicate keys, malformed or structurally ambiguous fallback YAML, and tab indentation; timestamp-looking scalars remain strings. Parser errors are terminal and never trigger a second parser.",
+  "cases": [
+    {
+      "id": "duplicate_block",
+      "text": "alpha: 1\nalpha: 2\n",
+      "expected": "reject"
+    },
+    {
+      "id": "duplicate_flow",
+      "text": "root: {alpha: 1, alpha: 2}\n",
+      "expected": "reject"
+    },
+    {
+      "id": "timestamp_date",
+      "text": "stamp: 2026-10-01\n",
+      "expected": "accept_timestamp_string",
+      "key": "stamp",
+      "value": "2026-10-01"
+    },
+    {
+      "id": "timestamp_datetime",
+      "text": "stamp: 2026-10-01T20:33:00Z\n",
+      "expected": "accept_timestamp_string",
+      "key": "stamp",
+      "value": "2026-10-01T20:33:00Z"
+    },
+    {
+      "id": "unclosed_flow_list",
+      "text": "alpha: [1, 2\n",
+      "expected": "reject"
+    },
+    {
+      "id": "unclosed_flow_map",
+      "text": "alpha: {x: 1, y: 2\n",
+      "expected": "reject"
+    },
+    {
+      "id": "tab_indent",
+      "text": "alpha:\n\tbeta: 1\n",
+      "expected": "reject"
+    },
+    {
+      "id": "trailing_unparsed_root",
+      "text": "- one\nalpha: two\n",
+      "expected": "reject"
+    }
+  ]
+}
