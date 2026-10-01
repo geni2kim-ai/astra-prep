@@ -524,7 +524,7 @@ def _conformance_walk(
     if "$ref" in schema:
         ref = schema["$ref"]
         if isinstance(root, dict) and isinstance(ref, str) and ref.startswith("#/"):
-            target = root
+            target: Any = root
             for part in ref[2:].split("/"):
                 target = target.get(part) if isinstance(target, dict) else None
             if target is None:
@@ -611,10 +611,12 @@ def _conformance_walk(
                 _conformance_walk(value[key], sub, f"{path}.{key}", fails, root, depth + 1)
     # if / then / else
     if "if" in schema:
-        probe: list[str] = []
+        condition_probe: list[str] = []
         if isinstance(schema["if"], dict):
-            _conformance_walk(value, schema["if"], f"{path}(if)", probe, root, depth + 1)
-        if not probe:
+            _conformance_walk(
+                value, schema["if"], f"{path}(if)", condition_probe, root, depth + 1
+            )
+        if not condition_probe:
             if "then" in schema and isinstance(schema["then"], dict):
                 _conformance_walk(value, schema["then"], f"{path}(then)", fails, root, depth + 1)
         elif "else" in schema and isinstance(schema["else"], dict):
@@ -660,7 +662,7 @@ def _scan_schema_keywords(
             _scan_schema_keywords(v, f"{path}.$defs.{k}", fails, root)
     ref = schema.get("$ref")
     if isinstance(ref, str) and ref.startswith("#/") and isinstance(root, dict):
-        target = root
+        target: Any = root
         for part in ref[2:].split("/"):
             target = target.get(part) if isinstance(target, dict) else None
         if isinstance(target, dict):
