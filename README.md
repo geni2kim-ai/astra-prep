@@ -4,7 +4,9 @@
 > *Fix the starting point, plan every requirement's evidence on two independent axes, and disclose capability gaps at hour 0 — not at closeout.*
 
 `astra-prep` is an ecosystem-agnostic pre-work planning skill for autonomous coding
-agents and multi-agent systems. It enforces a planning discipline **before** touching
+agents and multi-agent systems. The validator is an **offline verification gate
+(component)**: it checks the pre-work plan locally, but it is not an end-to-end approval,
+deployment, or finality gate. It enforces a planning discipline **before** touching
 source, drafting documents, or compiling artifacts, so that provenance drift, missing
 runtime evidence, and overlooked edge cases surface at *t=0* instead of at completion.
 
@@ -53,8 +55,9 @@ For any target cell the actor cannot reach: `acquire`, `rescope`, or `accept-as-
 
 The plan has a YAML/JSON sidecar
 ([`schemas/prework-plan.schema.json`](./schemas/prework-plan.schema.json)) checked by
-[`scripts/validate_prework.py`](./scripts/validate_prework.py) — stdlib only, no
-third-party dependency. It enforces **15 strict checks (C1–C15)** covering schema
+[`scripts/validate_prework.py`](./scripts/validate_prework.py). When PyYAML is present it
+uses a strict SafeLoader contract; when PyYAML is absent it uses the bundled narrow
+stdlib-only fallback parser. It enforces **15 strict checks (C1–C15)** covering schema
 keywords, duplicate keys, trailing newline regex injection, starting-point readbacks,
 evidence immutability, and genuine reviewer independence.
 
@@ -66,8 +69,9 @@ python scripts/validate_prework.py path/to/prework-plan.yaml
 
 ## What's new in v7.1 (Hardened Against Adversarial Audits)
 
-The `v7.1` release expands the test suite to **50 unit tests** (including dedicated
-adversarial regression fixtures in `tests/test_attack_regressions.py`):
+The original `v7.1` release carried **50 tests**. This hardening adds deterministic
+mutation fuzzing and parser attack-policy fixtures, bringing the suite to **56 tests**
+(including dedicated adversarial regressions in `tests/test_attack_regressions.py`):
 
 1. **C10 Schema Conformance Enforced (Fail-Closed):** Every declared level is walked against the schema; undeclared or missing required keys are rejected immediately.
 2. **C11 Evidence Output Immutability (`evidence_outputs`):** Self-writing scripts must declare an immutable write mechanism (`timestamped-path`, `copy-before-rerun`, or `append-only`) to prevent destroying pre-fix evidence.
@@ -75,7 +79,7 @@ adversarial regression fixtures in `tests/test_attack_regressions.py`):
 4. **C13 Verifiable Review Coverage (`requirements[].coverage`):** Enforces 1:1 binding between claimed review coverage and demonstrable artifact outputs.
 5. **C14 Forecast Semantics & Drift Policy:** Closed-set forecast dispositions. `CANDIDATE_READY` is strictly forbidden if any requirement is unreachable or carries unresolved start drift.
 6. **C15 Starting-Point Readback (`starting_point_readback`):** Mandatory sidecar section binding `candidate_path`, `candidate_sha256`, and live `git_state` directly to the target candidate.
-7. **Strict YAML/JSON Parser Contract:** Deterministic parsing preventing duplicate mapping keys, trailing newline regex bypasses (`\Z` anchor enforcement), and loose type coercion.
+7. **Strict YAML/JSON Parser Contract:** Deterministic parsing rejects duplicate mapping keys and malformed fallback syntax, preserves timestamp-looking scalars as strings, and prevents trailing-newline regex bypasses (`\Z` / full-string enforcement). The parser decision record is kept next to the implementation and exercised by fixed-seed mutation fuzzing.
 
 ---
 
@@ -89,10 +93,10 @@ adversarial regression fixtures in `tests/test_attack_regressions.py`):
 | [`references/domain-checks.md`](./references/domain-checks.md) | selective domain pre-check modules + artifact hygiene |
 | [`schemas/prework-plan.schema.json`](./schemas/prework-plan.schema.json) | JSON Schema for the plan sidecar (v1.1) |
 | [`scripts/validate_prework.py`](./scripts/validate_prework.py) | fail-closed validator with C1–C15 rule suite |
-| [`tests/`](./tests/) | 50-test test suite + attack regressions + core-first grep gate |
+| [`tests/`](./tests/) | 56-test suite + deterministic parser fuzzing + attack regressions + core-first grep gate |
 | [`ASTRA_PREP_USAGE.md`](./ASTRA_PREP_USAGE.md) | per-lineage usage guide, output template, worked examples |
 | [`README_RELAY.md`](./README_RELAY.md) | relay staging provenance, revision history, promotion gate |
-| [`CANDIDATE_HASHES.json`](./CANDIDATE_HASHES.json) | 25-file SHA-256 manifest and aggregate checksum |
+| [`CANDIDATE_HASHES.json`](./CANDIDATE_HASHES.json) | historical v7.1 candidate SHA-256 manifest and aggregate checksum (not a live manifest for later repository commits) |
 
 ---
 

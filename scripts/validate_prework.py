@@ -73,7 +73,9 @@ import argparse
 import json
 import re
 import sys
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Any, cast
 
 VALIDATOR_VERSION = "7.1.1-r54"
 
@@ -134,6 +136,20 @@ ALLOWED_SCHEMA_KEYWORDS = SUPPORTED_SCHEMA_KEYWORDS | ANNOTATION_SCHEMA_KEYWORDS
 # --------------------------------------------------------------------------- #
 # YAML parsing - one deterministic parser contract (F-03)
 # --------------------------------------------------------------------------- #
+# Parser decision record (W2):
+# - This validator is an offline verification gate (component), so it must keep a
+#   dependency-free fallback for environments where PyYAML is unavailable.
+# - yaml.safe_load() is not used directly because the gate requires duplicate mapping
+#   keys to be rejected instead of silently taking the last value.
+# - PyYAML's implicit timestamp resolver is disabled so date/time-looking evidence
+#   remains a string; validation must not depend on locale/timezone datetime coercion.
+# - The bundled parser intentionally accepts only a narrow mapping/list/flow subset.
+#   Unsupported or structurally ambiguous syntax is rejected rather than guessed.
+# - Parser errors are terminal for the selected parser. A PyYAML syntax error is never
+#   retried through the fallback, because fallback-after-error would widen acceptance.
+# - Full-string security identifiers are checked with fullmatch / schema \\Z anchors;
+#   the dollar-sign end anchor is avoided because it can match before a trailing newline.
+#
 # YAML 1.1 boolean set, exactly as PyYAML's implicit resolver maps it.
 YAML11_BOOLEANS = {
     "yes": True, "Yes": True, "YES": True,
@@ -145,20 +161,29 @@ YAML11_BOOLEANS = {
 }
 YAML11_NULLS = {"", "~", "null", "Null", "NULL"}
 
-_STRICT_YAML_CACHE: dict = {}
+_STRICT_YAML_CACHE: dict[str, type[Any]] = {}
 
 
 def _split_flow(s: str) -> list[str]:
-    """Split a single-line flow collection body on top-level commas."""
+    """Split a single-line flow collection body on top-level commas.
+
+    The fallback parser rejects unbalanced delimiters and unterminated quotes instead
+    of returning a partially interpreted value.
+    """
     parts: list[str] = []
     buf: list[str] = []
-    quote = None
+    quote: str | None = None
     depth = 0
+    escaped = False
     for ch in s:
-        if quote:
+        if quote is not None:
             buf.append(ch)
-            if ch == quote:
+            if quote == '"' and ch == "\\" and not escaped:
+                escaped = True
+                continue
+            if ch == quote and not escaped:
                 quote = None
+            escaped = False
         elif ch in ("'", '"'):
             quote = ch
             buf.append(ch)
@@ -167,18 +192,55 @@ def _split_flow(s: str) -> list[str]:
             buf.append(ch)
         elif ch in "]}":
             depth -= 1
+            if depth < 0:
+                raise ValueError("unbalanced closing delimiter in flow collection")
             buf.append(ch)
         elif ch == "," and depth == 0:
             parts.append("".join(buf))
             buf = []
         else:
             buf.append(ch)
+    if quote is not None:
+        raise ValueError("unterminated quote in flow collection")
+    if depth != 0:
+        raise ValueError("unbalanced delimiter in flow collection")
     if buf:
         parts.append("".join(buf))
     return [p.strip() for p in parts if p.strip()]
 
 
-def _parse_scalar(tok: str):
+def _split_flow_pair(pair: str) -> tuple[str, str]:
+    """Split one flow-mapping entry at its first top-level colon."""
+    quote: str | None = None
+    depth = 0
+    escaped = False
+    for index, ch in enumerate(pair):
+        if quote is not None:
+            if quote == '"' and ch == "\\" and not escaped:
+                escaped = True
+                continue
+            if ch == quote and not escaped:
+                quote = None
+            escaped = False
+            continue
+        if ch in ("'", '"'):
+            quote = ch
+        elif ch in "[{":
+            depth += 1
+        elif ch in "]}":
+            depth -= 1
+            if depth < 0:
+                raise ValueError("unbalanced closing delimiter in flow mapping")
+        elif ch == ":" and depth == 0:
+            key = pair[:index].strip().strip("'\"")
+            value = pair[index + 1 :].strip()
+            if not key or re.fullmatch(r"[A-Za-z0-9_]+", key) is None:
+                raise ValueError(f"unsupported flow mapping key: {key!r}")
+            return key, value
+    raise ValueError(f"flow mapping entry has no top-level colon: {pair!r}")
+
+
+def _parse_scalar(tok: str) -> Any:
     tok = tok.strip()
     if tok in YAML11_NULLS:
         return None
@@ -187,16 +249,19 @@ def _parse_scalar(tok: str):
     if tok.startswith("[") and tok.endswith("]"):
         return [_parse_scalar(x) for x in _split_flow(tok[1:-1])]
     if tok.startswith("{") and tok.endswith("}"):
-        out: dict = {}
+        out: dict[str, Any] = {}
         for pair in _split_flow(tok[1:-1]):
-            key, _, val = pair.partition(":")
-            key = key.strip().strip("'\"")
+            key, val = _split_flow_pair(pair)
             if key in out:
                 raise ValueError(f"duplicate key in flow mapping: {key!r}")
-            out[key] = _parse_scalar(val.strip())
+            out[key] = _parse_scalar(val)
         return out
+    if tok.startswith(("[", "{")) or tok.endswith(("]", "}")):
+        raise ValueError(f"malformed flow scalar: {tok!r}")
     if len(tok) >= 2 and tok[0] == tok[-1] and tok[0] in ("'", '"'):
         return tok[1:-1]
+    if tok.startswith(("'", '"')) or tok.endswith(("'", '"')):
+        raise ValueError(f"unterminated quoted scalar: {tok!r}")
     if re.fullmatch(r"[-+]?[0-9]+", tok):
         return int(tok)
     # floats (with a dot or exponent, so plain ints are handled above first)
@@ -210,7 +275,7 @@ def _strip_comment(line: str) -> str:
     # YAML rule: '#' starts a comment only at line start or after whitespace
     # (outside quotes), so unquoted values containing '#' survive intact.
     out: list[str] = []
-    quote = None
+    quote: str | None = None
     for i, ch in enumerate(line):
         if quote:
             out.append(ch)
@@ -226,14 +291,14 @@ def _strip_comment(line: str) -> str:
     return "".join(out).rstrip()
 
 
-def _minimal_yaml(text: str):
-    """Block-style YAML subset: nested maps, lists of maps/scalars, 2-space indent.
+def _minimal_yaml(text: str) -> Any:
+    """Block-style YAML subset: nested maps, lists of maps/scalars, space indentation.
 
     Contract parity with the strict PyYAML loader (F-03): YAML 1.1 booleans
     (yes/no/on/off/true/false in PyYAML's exact casing set), the same null set, and
     duplicate-key rejection in block mappings AND flow mappings.
     """
-    lines = []
+    lines: list[tuple[int, str]] = []
     for raw in text.splitlines():
         s = _strip_comment(raw)
         if s.strip() == "" or s.strip() == "---":
@@ -246,7 +311,7 @@ def _minimal_yaml(text: str):
 
     pos = 0
 
-    def parse_block(min_indent: int):
+    def parse_block(min_indent: int) -> Any:
         nonlocal pos
         if pos >= len(lines):
             return None
@@ -255,9 +320,9 @@ def _minimal_yaml(text: str):
             return parse_list(indent)
         return parse_map(indent) if indent >= min_indent else None
 
-    def parse_map(cur_indent: int):
+    def parse_map(cur_indent: int) -> dict[str, Any]:
         nonlocal pos
-        result: dict = {}
+        result: dict[str, Any] = {}
         while pos < len(lines):
             indent, content = lines[pos]
             if indent < cur_indent:
@@ -282,9 +347,9 @@ def _minimal_yaml(text: str):
                 result[key] = _parse_scalar(rest)
         return result
 
-    def parse_list(cur_indent: int):
+    def parse_list(cur_indent: int) -> list[Any]:
         nonlocal pos
-        result: list = []
+        result: list[Any] = []
         while pos < len(lines):
             indent, content = lines[pos]
             if indent < cur_indent or not content.startswith("- "):
@@ -304,18 +369,20 @@ def _minimal_yaml(text: str):
         return result
 
     doc = parse_block(0)
+    if pos != len(lines):
+        raise ValueError(f"unparsed YAML content remains at line index {pos}")
     return doc if doc is not None else {}
 
 
-def _strict_yaml_loader():
+def _strict_yaml_loader() -> type[Any]:
     """Build (once) the single PyYAML authority loader. Strict contract on top of
     SafeLoader semantics: (a) duplicate mapping keys raise ValueError, (b) implicit
     timestamps are kept as strings (no locale/timezone-dependent datetime objects)."""
     if _STRICT_YAML_CACHE.get("loader") is not None:
         return _STRICT_YAML_CACHE["loader"]
-    import yaml  # type: ignore
+    import yaml
 
-    class StrictSafeLoader(yaml.SafeLoader):  # type: ignore[name-defined]
+    class StrictSafeLoader(yaml.SafeLoader):
         pass
 
     ts_tag = "tag:yaml.org,2002:timestamp"
@@ -324,9 +391,11 @@ def _strict_yaml_loader():
         for prefix, resolvers in StrictSafeLoader.yaml_implicit_resolvers.items()
     }
 
-    def _construct_mapping_no_duplicates(loader, node, deep=False):
+    def _construct_mapping_no_duplicates(
+        loader: Any, node: Any, deep: bool = False
+    ) -> dict[Any, Any]:
         loader.flatten_mapping(node)  # keep merge-key ('<<') support
-        mapping = {}
+        mapping: dict[Any, Any] = {}
         for key_node, value_node in node.value:
             key = loader.construct_object(key_node, deep=deep)
             try:
@@ -353,15 +422,15 @@ def _strict_yaml_loader():
     return StrictSafeLoader
 
 
-def strict_yaml_load(text: str):
+def strict_yaml_load(text: str) -> Any:
     """The PyYAML-side parser contract (F-03). Raises ValueError on duplicate keys."""
-    import yaml  # type: ignore
+    import yaml
 
     return yaml.load(text, Loader=_strict_yaml_loader())
 
 
-def _json_no_duplicates(pairs):
-    result = {}
+def _json_no_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
     for k, v in pairs:
         if k in result:
             raise ValueError(f"duplicate JSON key: {k!r}")
@@ -369,12 +438,12 @@ def _json_no_duplicates(pairs):
     return result
 
 
-def load_plan(path: Path):
+def load_plan(path: Path) -> Any:
     text = path.read_text(encoding="utf-8")
     if path.suffix.lower() == ".json":
         return json.loads(text, object_pairs_hook=_json_no_duplicates)
     try:
-        import yaml  # type: ignore  # noqa: F401
+        import yaml  # noqa: F401
     except ImportError:
         # stdlib-only fallback: the bundled block-style-subset parser, same contract
         return _minimal_yaml(text)
@@ -388,7 +457,7 @@ def parser_identity(suffix: str = "") -> str:
     if suffix.lower() == ".json":
         return f"json/stdlib (python {python_version()}; duplicate keys rejected)"
     try:
-        import yaml  # type: ignore
+        import yaml
     except ImportError:
         return (
             "bundled-minimal-yaml/1 (PyYAML absent; block-style subset, "
@@ -404,16 +473,16 @@ def python_version() -> str:
     return sys.version.split()[0]
 
 
-def load_schema() -> dict:
+def load_schema() -> dict[str, Any]:
     """Load the sibling schema file; C10 enforces whatever it declares."""
     schema_path = Path(__file__).resolve().parents[1] / "schemas" / "prework-plan.schema.json"
-    return json.loads(schema_path.read_text(encoding="utf-8"))
+    return cast(dict[str, Any], json.loads(schema_path.read_text(encoding="utf-8")))
 
 
 # --------------------------------------------------------------------------- #
 # checks
 # --------------------------------------------------------------------------- #
-def _type_ok(value, types) -> bool:
+def _type_ok(value: Any, types: str | list[str]) -> bool:
     if not isinstance(types, list):
         types = [types]
     for t in types:
@@ -434,8 +503,14 @@ def _type_ok(value, types) -> bool:
     return False
 
 
-def _conformance_walk(value, schema: dict, path: str, fails: list[str],
-                      root: dict | None = None, depth: int = 0) -> None:
+def _conformance_walk(
+    value: Any,
+    schema: dict[str, Any],
+    path: str,
+    fails: list[str],
+    root: dict[str, Any] | None = None,
+    depth: int = 0,
+) -> None:
     """C10: enforce the schema's declared keyword subset (F-02): required keys,
     additionalProperties=false, local $ref targets, enum, const, oneOf, leaf types
     (incl. union types), minLength, minItems, pattern, and if/then. Unsupported
@@ -449,7 +524,7 @@ def _conformance_walk(value, schema: dict, path: str, fails: list[str],
     if "$ref" in schema:
         ref = schema["$ref"]
         if isinstance(root, dict) and isinstance(ref, str) and ref.startswith("#/"):
-            target = root
+            target: Any = root
             for part in ref[2:].split("/"):
                 target = target.get(part) if isinstance(target, dict) else None
             if target is None:
@@ -536,17 +611,24 @@ def _conformance_walk(value, schema: dict, path: str, fails: list[str],
                 _conformance_walk(value[key], sub, f"{path}.{key}", fails, root, depth + 1)
     # if / then / else
     if "if" in schema:
-        probe: list[str] = []
+        condition_probe: list[str] = []
         if isinstance(schema["if"], dict):
-            _conformance_walk(value, schema["if"], f"{path}(if)", probe, root, depth + 1)
-        if not probe:
+            _conformance_walk(
+                value, schema["if"], f"{path}(if)", condition_probe, root, depth + 1
+            )
+        if not condition_probe:
             if "then" in schema and isinstance(schema["then"], dict):
                 _conformance_walk(value, schema["then"], f"{path}(then)", fails, root, depth + 1)
         elif "else" in schema and isinstance(schema["else"], dict):
             _conformance_walk(value, schema["else"], f"{path}(else)", fails, root, depth + 1)
 
 
-def _scan_schema_keywords(schema, path: str, fails: list[str], root: dict | None = None) -> None:
+def _scan_schema_keywords(
+    schema: Any,
+    path: str,
+    fails: list[str],
+    root: dict[str, Any] | None = None,
+) -> None:
     """F-02 fail-closed half: any schema keyword outside the enforced subset is an
     error, never a silent no-op. Run once over the whole schema tree before walking
     the plan."""
@@ -580,21 +662,21 @@ def _scan_schema_keywords(schema, path: str, fails: list[str], root: dict | None
             _scan_schema_keywords(v, f"{path}.$defs.{k}", fails, root)
     ref = schema.get("$ref")
     if isinstance(ref, str) and ref.startswith("#/") and isinstance(root, dict):
-        target = root
+        target: Any = root
         for part in ref[2:].split("/"):
             target = target.get(part) if isinstance(target, dict) else None
         if isinstance(target, dict):
             _scan_schema_keywords(target, f"{path}$ref:{ref}", fails, root)
 
 
-def _is_placeholder(v) -> bool:
+def _is_placeholder(v: Any) -> bool:
     return not isinstance(v, str) or v.strip().upper() in PLACEHOLDER_VALUES
 
 
-def validate(plan, schema: dict | None = None) -> list[str]:
+def validate(plan: Any, schema: dict[str, Any] | None = None) -> list[str]:
     fails: list[str] = []
 
-    def fail(cid: str, detail: str):
+    def fail(cid: str, detail: str) -> None:
         fails.append(f"FAIL: {cid} - {detail}")
 
     if not isinstance(plan, dict):
@@ -913,7 +995,7 @@ def validate(plan, schema: dict | None = None) -> list[str]:
     return fails
 
 
-def main(argv=None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Validate an astra-prep pre-work plan sidecar.")
     ap.add_argument("plan", type=Path, help="path to prework-plan.yaml or .json")
     args = ap.parse_args(argv)
